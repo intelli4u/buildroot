@@ -80,6 +80,15 @@ CONFIG_DIR:=$(O)
 EXTRAMAKEARGS = O=$(O)
 NEED_WRAPPER=y
 endif
+# bash prints the name of the directory on 'cd <dir>' if CDPATH is
+# set, so unset it here to not cause problems. Notice that the export
+# line doesn't affect the environment of $(shell ..) calls, so
+# explictly throw away any output from 'cd' here.
+export CDPATH:=
+BASE_DIR := $(shell mkdir -p $(O) && cd $(O) >/dev/null && pwd)
+$(if $(BASE_DIR),, $(error output directory "$(O)" does not exist))
+
+BUILD_DIR:=$(BASE_DIR)/build
 
 # Pull in the user's configuration file
 ifeq ($(filter $(noconfig_targets),$(MAKECMDGOALS)),)
@@ -164,16 +173,6 @@ HOSTNM:=$(shell which $(HOSTNM) || type -p $(HOSTNM) || echo nm)
 
 export HOSTAR HOSTAS HOSTCC HOSTCXX HOSTFC HOSTLD
 export HOSTCC_NOCCACHE HOSTCXX_NOCCACHE
-
-# bash prints the name of the directory on 'cd <dir>' if CDPATH is
-# set, so unset it here to not cause problems. Notice that the export
-# line doesn't affect the environment of $(shell ..) calls, so
-# explictly throw away any output from 'cd' here.
-export CDPATH:=
-BASE_DIR := $(shell mkdir -p $(O) && cd $(O) >/dev/null && pwd)
-$(if $(BASE_DIR),, $(error output directory "$(O)" does not exist))
-
-BUILD_DIR:=$(BASE_DIR)/build
 
 
 ifeq ($(BR2_HAVE_DOT_CONFIG),y)
