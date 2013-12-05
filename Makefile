@@ -90,6 +90,27 @@ $(if $(BASE_DIR),, $(error output directory "$(O)" does not exist))
 
 BUILD_DIR:=$(BASE_DIR)/build
 
+# Handling of BR2_EXTERNAL.
+#
+# The value of BR2_EXTERNAL is stored in .br-external in the output directory.
+# On subsequent invocations of make, it is read in. It can still be overridden
+# on the command line, therefore the file is re-created every time make is run.
+#
+# When BR2_EXTERNAL is not set, the .br-external file is removed and we point
+# to support/dummy-external. This makes sure we can unconditionally include the
+# Config.in and external.mk from the BR2_EXTERNAL directory. In this case,
+# override is necessary so the user can clear BR2_EXTERNAL from the command
+# line, but the dummy path is still used internally.
+
+BR2_EXTERNAL_FILE = $(BASE_DIR)/.br-external
+-include $(BR2_EXTERNAL_FILE)
+ifeq ($(BR2_EXTERNAL),)
+  override BR2_EXTERNAL = support/dummy-external
+  $(shell rm -f $(BR2_EXTERNAL_FILE))
+else
+  $(shell echo BR2_EXTERNAL ?= $(BR2_EXTERNAL) > $(BR2_EXTERNAL_FILE))
+endif
+
 # Pull in the user's configuration file
 ifeq ($(filter $(noconfig_targets),$(MAKECMDGOALS)),)
 -include $(CONFIG_DIR)/.config
@@ -536,7 +557,8 @@ COMMON_CONFIG_ENV = \
 	KCONFIG_AUTOCONFIG=$(BUILD_DIR)/buildroot-config/auto.conf \
 	KCONFIG_AUTOHEADER=$(BUILD_DIR)/buildroot-config/autoconf.h \
 	KCONFIG_TRISTATE=$(BUILD_DIR)/buildroot-config/tristate.config \
-	BUILDROOT_CONFIG=$(CONFIG_DIR)/.config
+	BUILDROOT_CONFIG=$(CONFIG_DIR)/.config \
+	BR2_EXTERNAL=$(BR2_EXTERNAL)
 
 xconfig: $(BUILD_DIR)/buildroot-config/qconf outputmakefile
 	@mkdir -p $(BUILD_DIR)/buildroot-config
