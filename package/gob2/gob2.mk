@@ -13,4 +13,4 @@ $(eval $(call AUTOTARGETS))
 $(eval $(call AUTOTARGETS,host))
 
 # gob2 for the host
-GOB2_HOST_BINARY:=$(HOST_DIR)/usr/bin/gob2
+GOB2_HOST_BINARY:=$(TOOLCHAINS_DIR)/bin/gob2

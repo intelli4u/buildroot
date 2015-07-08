@@ -40,7 +40,7 @@ LIBGLIB2_CONF_ENV =	\
 		gl_cv_func_mkdir_trailing_slash_bug=no gl_cv_func_mkstemp_limitations=no \
 		ac_cv_func_working_mktime=yes jm_cv_func_working_re_compile_pattern=yes \
 		ac_use_included_regex=no gl_cv_c_restrict=no \
-		ac_cv_path_GLIB_GENMARSHAL=$(HOST_DIR)/usr/bin/glib-genmarshal ac_cv_prog_F77=no \
+		ac_cv_path_GLIB_GENMARSHAL=$(TOOLCHAINS_DIR)/bin/glib-genmarshal ac_cv_prog_F77=no \
 		ac_cv_func_posix_getgrgid_r=no \
 		gt_cv_c_wchar_t=$(if $(BR2_USE_WCHAR),yes,no)
 
@@ -81,7 +81,7 @@ ifneq ($(BR2_PACKAGE_GDB),y)
 LIBGLIB2_POST_INSTALL_TARGET_HOOKS += LIBGLIB2_REMOVE_GDB_FILES
 endif
 
-$(eval $(call AUTOTARGETS))
+#$(eval $(call AUTOTARGETS))
 $(eval $(call AUTOTARGETS,host))
 
-LIBGLIB2_HOST_BINARY:=$(HOST_DIR)/usr/bin/glib-genmarshal
+LIBGLIB2_HOST_BINARY:=$(TOOLCHAINS_DIR)/bin/glib-genmarshal

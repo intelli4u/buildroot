@@ -28,7 +28,7 @@ define HOST_MAKEDEVS_BUILD_CMDS
 endef
 
 define HOST_MAKEDEVS_INSTALL_CMDS
-	install -D -m 755 $(@D)/makedevs $(HOST_DIR)/usr/bin/makedevs
+	install -D -m 755 $(@D)/makedevs $(TOOLCHAINS_DIR)/bin/makedevs
 endef
 
 $(eval $(call GENTARGETS))

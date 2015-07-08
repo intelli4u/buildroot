@@ -88,7 +88,7 @@ define PYTHON_PYGAME_BUILD_CMDS
 		_python_srcdir=$(BUILD_DIR)/python$(PYTHON_VERSION) \
 		_python_prefix=/usr \
 		_python_exec_prefix=/usr \
-		$(HOST_DIR)/usr/bin/python setup.py build)
+		$(TOOLCHAINS_DIR)/bin/python setup.py build)
 endef
 
 ifneq ($(BR2_HAVE_DOCUMENTATION),y)
@@ -98,7 +98,7 @@ endef
 endif
 
 define PYTHON_PYGAME_INSTALL_TARGET_CMDS
-	(cd $(@D); $(HOST_DIR)/usr/bin/python setup.py install \
+	(cd $(@D); $(TOOLCHAINS_DIR)/bin/python setup.py install \
 		--prefix=$(TARGET_DIR)/usr)
 	rm -rf $(TARGET_DIR)/usr/lib/python*/site-packages/pygame/tests
 	$(PYTHON_PYGAME_REMOVE_DOC)

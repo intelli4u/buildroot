@@ -130,7 +130,7 @@ HOST_DIRECTFB_BUILD_CMDS = \
 	$(MAKE) -C $(@D)/tools directfb-csource
 
 HOST_DIRECTFB_INSTALL_CMDS = \
-	$(INSTALL) -m 0755 $(@D)/tools/directfb-csource $(HOST_DIR)/usr/bin
+	$(INSTALL) -m 0755 $(@D)/tools/directfb-csource $(TOOLCHAINS_DIR)/bin
 
 define DIRECTFB_STAGING_CONFIG_FIXUP
 	$(SED) "s,^prefix=.*,prefix=\'$(STAGING_DIR)/usr\',g" \
@@ -144,4 +144,4 @@ $(eval $(call AUTOTARGETS))
 $(eval $(call AUTOTARGETS,host))
 
 # directfb-csource for the host
-DIRECTFB_HOST_BINARY:=$(HOST_DIR)/usr/bin/directfb-csource
+DIRECTFB_HOST_BINARY:=$(TOOLCHAINS_DIR)/bin/directfb-csource

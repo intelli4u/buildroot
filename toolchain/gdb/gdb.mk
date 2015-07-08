@@ -203,7 +203,7 @@ $(GDB_HOST_DIR)/gdb/gdb: $(GDB_HOST_DIR)/.configured
 $(TARGET_CROSS)gdb: $(GDB_HOST_DIR)/gdb/gdb
 	install -c $(GDB_HOST_DIR)/gdb/gdb $(TARGET_CROSS)gdb
 	ln -snf $(REAL_GNU_TARGET_NAME)-gdb \
-		$(HOST_DIR)/usr/bin/$(GNU_TARGET_NAME)-gdb
+		$(TOOLCHAINS_DIR)/bin/$(GNU_TARGET_NAME)-gdb
 
 gdbhost: host-expat $(TARGET_CROSS)gdb
 

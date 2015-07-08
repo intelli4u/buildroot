@@ -37,4 +37,4 @@ $(eval $(call AUTOTARGETS))
 $(eval $(call AUTOTARGETS,host))
 
 # libxml2 for the host
-LIBXML2_HOST_BINARY:=$(HOST_DIR)/usr/bin/xmllint
+LIBXML2_HOST_BINARY:=$(TOOLCHAINS_DIR)/bin/xmllint

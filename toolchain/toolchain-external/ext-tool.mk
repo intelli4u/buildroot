@@ -47,7 +47,7 @@
 #  so we're sure the correct configuration is always used and the
 #  toolchain behaves similar to an internal toolchain.
 #  This toolchain wrapper and symlinks are installed into
-#  $(HOST_DIR)/usr/bin like for the internal toolchains, and the rest
+#  $(TOOLCHAINS_DIR)/bin like for the internal toolchains, and the rest
 #  of Buildroot is handled identical for the 2 toolchain types.
 
 LIB_EXTERNAL_LIBS=ld*.so libc.so libcrypt.so libdl.so libgcc_s.so libm.so libnsl.so libresolv.so librt.so libutil.so
@@ -320,8 +320,8 @@ $(STAMP_DIR)/ext-toolchain-installed: $(TOOLCHAIN_EXTERNAL_DEPENDENCIES)
 
 # Build toolchain wrapper for preprocessor, C and C++ compiler, and setup
 # symlinks for everything else
-$(HOST_DIR)/usr/bin/ext-toolchain-wrapper: $(STAMP_DIR)/ext-toolchain-installed
-	mkdir -p $(HOST_DIR)/usr/bin; cd $(HOST_DIR)/usr/bin; \
+$(TOOLCHAINS_DIR)/bin/ext-toolchain-wrapper: $(STAMP_DIR)/ext-toolchain-installed
+	mkdir -p $(TOOLCHAINS_DIR)/bin; cd $(TOOLCHAINS_DIR)/bin; \
 	for i in $(TOOLCHAIN_EXTERNAL_CROSS)*; do \
 		base=$${i##*/}; \
 		case "$$base" in \
@@ -337,7 +337,7 @@ $(HOST_DIR)/usr/bin/ext-toolchain-wrapper: $(STAMP_DIR)/ext-toolchain-installed
 		toolchain/toolchain-external/ext-toolchain-wrapper.c -o $@
 
 # 'uclibc' is the target to provide toolchain / staging dir
-uclibc: dependencies $(HOST_DIR)/usr/bin/ext-toolchain-wrapper
+uclibc: dependencies $(TOOLCHAINS_DIR)/bin/ext-toolchain-wrapper
 
 ifeq ($(BR2_TOOLCHAIN_EXTERNAL_DOWNLOAD),y)
 # download ext toolchain if so configured

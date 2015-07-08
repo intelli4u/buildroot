@@ -29,13 +29,13 @@ define PYTHON_MAD_BUILD_CMDS
 		CFLAGS="$(TARGET_CFLAGS)" 	\
 		LDSHARED="$(TARGET_CC) -shared" \
 		LDFLAGS="$(TARGET_LDFLAGS)" 	\
-	$(HOST_DIR)/usr/bin/python setup.py build_ext \
+	$(TOOLCHAINS_DIR)/bin/python setup.py build_ext \
 	--include-dirs=$(STAGING_DIR)/usr/include/python$(PYTHON_VERSION_MAJOR))
-	(cd $(@D); $(HOST_DIR)/usr/bin/python setup.py build)
+	(cd $(@D); $(TOOLCHAINS_DIR)/bin/python setup.py build)
 endef
 
 define PYTHON_MAD_INSTALL_TARGET_CMDS
-	(cd $(@D); $(HOST_DIR)/usr/bin/python setup.py install --prefix=$(TARGET_DIR)/usr)
+	(cd $(@D); $(TOOLCHAINS_DIR)/bin/python setup.py install --prefix=$(TARGET_DIR)/usr)
 endef
 
 $(eval $(call GENTARGETS))

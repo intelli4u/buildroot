@@ -34,11 +34,11 @@ define HOST_SSTRIP_BUILD_CMDS
 endef
 
 define HOST_SSTRIP_INSTALL_CMDS
-	$(INSTALL) -D $(@D)/sstrip $(HOST_DIR)/usr/bin/$(HOST_SSTRIP_BINARY)
+	$(INSTALL) -D $(@D)/sstrip $(TOOLCHAINS_DIR)/bin/$(HOST_SSTRIP_BINARY)
 endef
 
 define HOST_SSTRIP_UNINSTALL_CMDS
-	rm -f $(HOST_DIR)/usr/bin/$(HOST_SSTRIP_BINARY)
+	rm -f $(TOOLCHAINS_DIR)/bin/$(HOST_SSTRIP_BINARY)
 endef
 
 $(eval $(call GENTARGETS))

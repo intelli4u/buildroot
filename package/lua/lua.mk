@@ -108,18 +108,18 @@ define LUA_INSTALL_TARGET_CMDS
 endef
 
 define HOST_LUA_INSTALL_CMDS
-	$(INSTALL) $(@D)/src/lua $(HOST_DIR)/usr/bin
-	$(INSTALL) $(@D)/src/luac $(HOST_DIR)/usr/bin
+	$(INSTALL) $(@D)/src/lua $(TOOLCHAINS_DIR)/bin
+	$(INSTALL) $(@D)/src/luac $(TOOLCHAINS_DIR)/bin
 	$(INSTALL) $(@D)/src/liblua.so.$(LUA_VERSION) \
-		$(HOST_DIR)/usr/lib/liblua.so.$(LUA_VERSION)
-	ln -sf liblua.so.$(LUA_VERSION) $(HOST_DIR)/usr/lib/liblua.so
-	$(INSTALL) $(@D)/src/liblua.a $(HOST_DIR)/usr/lib/liblua.a
+		$(TOOLCHAINS_DIR)/lib/liblua.so.$(LUA_VERSION)
+	ln -sf liblua.so.$(LUA_VERSION) $(TOOLCHAINS_DIR)/lib/liblua.so
+	$(INSTALL) $(@D)/src/liblua.a $(TOOLCHAINS_DIR)/lib/liblua.a
 	$(INSTALL) -m 0644 -D $(@D)/etc/lua.pc \
-		$(HOST_DIR)/usr/lib/pkgconfig/lua.pc
-	$(INSTALL) $(@D)/src/lua.h $(HOST_DIR)/usr/include
-	$(INSTALL) $(@D)/src/luaconf.h $(HOST_DIR)/usr/include
-	$(INSTALL) $(@D)/src/lualib.h $(HOST_DIR)/usr/include
-	$(INSTALL) $(@D)/src/lauxlib.h $(HOST_DIR)/usr/include
+		$(TOOLCHAINS_DIR)/lib/pkgconfig/lua.pc
+	$(INSTALL) $(@D)/src/lua.h $(TOOLCHAINS_DIR)/include
+	$(INSTALL) $(@D)/src/luaconf.h $(TOOLCHAINS_DIR)/include
+	$(INSTALL) $(@D)/src/lualib.h $(TOOLCHAINS_DIR)/include
+	$(INSTALL) $(@D)/src/lauxlib.h $(TOOLCHAINS_DIR)/include
 endef
 
 LUA_INSTALLED_FILES = \

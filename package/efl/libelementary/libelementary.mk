@@ -12,7 +12,7 @@ LIBELEMENTARY_INSTALL_STAGING = YES
 LIBELEMENTARY_DEPENDENCIES = libeina libevas libecore libedje host-libedje \
 				host-libeet
 
-LIBELEMENTARY_CONF_OPT = --with-edje-cc=$(HOST_DIR)/usr/bin/edje_cc \
-			 --with-eet-eet=$(HOST_DIR)/usr/bin/eet
+LIBELEMENTARY_CONF_OPT = --with-edje-cc=$(TOOLCHAINS_DIR)/bin/edje_cc \
+			 --with-eet-eet=$(TOOLCHAINS_DIR)/bin/eet
 
 $(eval $(call AUTOTARGETS))

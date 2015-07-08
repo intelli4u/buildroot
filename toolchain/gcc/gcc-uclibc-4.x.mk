@@ -92,8 +92,8 @@ GCC_TARGET_LANGUAGES:=$(GCC_TARGET_LANGUAGES),fortran
 endif
 
 # GCC 4.x prerequisites
-GCC_WITH_HOST_GMP = --with-gmp=$(HOST_DIR)/usr
-GCC_WITH_HOST_MPFR = --with-mpfr=$(HOST_DIR)/usr
+GCC_WITH_HOST_GMP = --with-gmp=$(TOOLCHAINS_DIR)
+GCC_WITH_HOST_MPFR = --with-mpfr=$(TOOLCHAINS_DIR)
 ifeq ($(BR2_TOOLCHAIN_BUILDROOT),y)
 HOST_SOURCE += host-gmp-source host-mpfr-source
 endif
@@ -102,7 +102,7 @@ GCC_TARGET_PREREQ += mpfr gmp
 
 # GCC 4.5.x prerequisites
 ifeq ($(findstring x4.5.,x$(GCC_VERSION)),x4.5.)
-GCC_WITH_HOST_MPC = --with-mpc=$(HOST_DIR)/usr
+GCC_WITH_HOST_MPC = --with-mpc=$(TOOLCHAINS_DIR)
 GCC_TARGET_PREREQ += mpc
 ifeq ($(BR2_TOOLCHAIN_BUILDROOT),y)
 HOST_SOURCE += host-mpc-source
@@ -112,7 +112,7 @@ endif
 
 # GCC 4.6.x prerequisites
 ifeq ($(findstring x4.6.,x$(GCC_VERSION)),x4.6.)
-GCC_WITH_HOST_MPC = --with-mpc=$(HOST_DIR)/usr
+GCC_WITH_HOST_MPC = --with-mpc=$(TOOLCHAINS_DIR)
 GCC_TARGET_PREREQ += mpc
 ifeq ($(BR2_TOOLCHAIN_BUILDROOT),y)
 HOST_SOURCE += host-mpc-source
@@ -123,7 +123,7 @@ endif
 # GCC snapshot prerequisites
 # Since we don't know and it can be quite new just ask for everything known
 ifneq ($(GCC_SNAP_DATE),)
-GCC_WITH_HOST_MPC = --with-mpc=$(HOST_DIR)/usr
+GCC_WITH_HOST_MPC = --with-mpc=$(TOOLCHAINS_DIR)
 GCC_TARGET_PREREQ += mpc
 ifeq ($(BR2_TOOLCHAIN_BUILDROOT),y)
 HOST_SOURCE += host-mpc-source
@@ -157,6 +157,12 @@ endif
 
 ifeq ($(BR2_GCC_SUPPORTS_FINEGRAINEDMTUNE),y)
 GCC_DECIMAL_FLOAT:=--disable-decimal-float
+endif
+
+ifeq ($(BR2_KERNEL_HEADERS_2_6_36),y)
+LN_PREFIX = linux-2.6.36
+else
+LN_PREFIX = linux
 endif
 
 # gcc version < 4.2.0 don't have -Wno-overlength-strings and the configure
@@ -208,7 +214,7 @@ $(GCC_BUILD_DIR1)/.configured: $(GCC_DIR)/.patched
 	(cd $(GCC_BUILD_DIR1); rm -rf config.cache; \
 		$(HOST_CONFIGURE_OPTS) \
 		$(GCC_DIR)/configure $(QUIET) \
-		--prefix=$(HOST_DIR)/usr \
+		--prefix=$(TOOLCHAINS_DIR) \
 		--build=$(GNU_HOST_NAME) \
 		--host=$(GNU_HOST_NAME) \
 		--target=$(REAL_GNU_TARGET_NAME) \
@@ -248,11 +254,11 @@ endif
 	touch $@
 
 gcc_initial=$(GCC_BUILD_DIR1)/.installed
-$(gcc_initial) $(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-gcc: $(GCC_BUILD_DIR1)/.compiled
+$(gcc_initial) $(TOOLCHAINS_DIR)/bin/$(REAL_GNU_TARGET_NAME)-gcc: $(GCC_BUILD_DIR1)/.compiled
 	PATH=$(TARGET_PATH) $(MAKE) -C $(GCC_BUILD_DIR1) install-gcc
 	touch $(gcc_initial)
 
-gcc_initial: $(GCC_HOST_PREREQ) host-binutils $(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-gcc
+gcc_initial: $(GCC_HOST_PREREQ) host-binutils $(TOOLCHAINS_DIR)/bin/$(REAL_GNU_TARGET_NAME)-gcc
 
 gcc_initial-clean:
 	rm -rf $(GCC_BUILD_DIR1)
@@ -276,7 +282,7 @@ $(GCC_BUILD_DIR2)/.configured: $(GCC_DIR)/.patched
 	(cd $(GCC_BUILD_DIR2); rm -rf config.cache; \
 		$(HOST_CONFIGURE_OPTS) \
 		$(GCC_DIR)/configure $(QUIET) \
-		--prefix=$(HOST_DIR)/usr \
+		--prefix=$(TOOLCHAINS_DIR) \
 		--build=$(GNU_HOST_NAME) \
 		--host=$(GNU_HOST_NAME) \
 		--target=$(REAL_GNU_TARGET_NAME) \
@@ -325,7 +331,7 @@ else
 endif
 	touch $(gcc_intermediate)
 
-gcc_intermediate: uclibc-configured $(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-gcc
+gcc_intermediate: uclibc-configured $(TOOLCHAINS_DIR)/bin/$(REAL_GNU_TARGET_NAME)-gcc
 
 gcc_intermediate-clean:
 	rm -rf $(GCC_BUILD_DIR2)
@@ -350,11 +356,11 @@ GCC_BUILD_DIR3:=$(TOOLCHAIN_DIR)/gcc-$(GCC_VERSION)-final
 $(GCC_BUILD_DIR3)/.configured: $(GCC_SRC_DIR)/.patched $(GCC_STAGING_PREREQ)
 	mkdir -p $(GCC_BUILD_DIR3)
 	# Important! Required for limits.h to be fixed.
-	ln -snf ../include/ $(HOST_DIR)/usr/$(REAL_GNU_TARGET_NAME)/sys-include
+	ln -snf ../include/ $(TOOLCHAINS_DIR)/$(REAL_GNU_TARGET_NAME)/sys-include
 	(cd $(GCC_BUILD_DIR3); rm -rf config.cache; \
 		$(HOST_CONFIGURE_OPTS) \
 		$(GCC_SRC_DIR)/configure $(QUIET) \
-		--prefix=$(HOST_DIR)/usr \
+		--prefix=$(TOOLCHAINS_DIR) \
 		--build=$(GNU_HOST_NAME) \
 		--host=$(GNU_HOST_NAME) \
 		--target=$(REAL_GNU_TARGET_NAME) \
@@ -401,24 +407,25 @@ $(GCC_BUILD_DIR3)/.installed: $(GCC_BUILD_DIR3)/.compiled
 	fi
 	# Strip the host binaries
 ifeq ($(GCC_STRIP_HOST_BINARIES),true)
-	strip --strip-all -R .note -R .comment $(filter-out %-gccbug %-embedspu,$(wildcard $(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-*))
+	strip --strip-all -R .note -R .comment $(filter-out %-gccbug %-embedspu,$(wildcard $(TOOLCHAINS_DIR)/bin/$(REAL_GNU_TARGET_NAME)-*))
 endif
 	# Make sure we have 'cc'.
-	if [ ! -e $(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-cc ]; then \
+	if [ ! -e $(TOOLCHAINS_DIR)/bin/$(REAL_GNU_TARGET_NAME)-cc ]; then \
 		ln -snf $(REAL_GNU_TARGET_NAME)-gcc \
-			$(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-cc; \
+			$(TOOLCHAINS_DIR)/bin/$(REAL_GNU_TARGET_NAME)-cc; \
 	fi
-	if [ ! -e $(HOST_DIR)/usr/$(REAL_GNU_TARGET_NAME)/bin/cc ]; then \
-		ln -snf gcc $(HOST_DIR)/usr/$(REAL_GNU_TARGET_NAME)/bin/cc; \
+	if [ ! -e $(TOOLCHAINS_DIR)/$(REAL_GNU_TARGET_NAME)/bin/cc ]; then \
+		ln -snf gcc $(TOOLCHAINS_DIR)/$(REAL_GNU_TARGET_NAME)/bin/cc; \
 	fi
 	# Set up the symlinks to enable lying about target name.
+	# BRCM, change prefix name to mipsel-uclibc-linux-XX.XX.XX-*
 	set -e; \
-	(cd $(HOST_DIR)/usr; \
+	(cd $(TOOLCHAINS_DIR); \
 		ln -snf $(REAL_GNU_TARGET_NAME) $(GNU_TARGET_NAME); \
 		cd bin; \
 		for app in $(REAL_GNU_TARGET_NAME)-*; do \
 			ln -snf $${app} \
-			$(GNU_TARGET_NAME)$${app##$(REAL_GNU_TARGET_NAME)}; \
+			$(ARCH)-uclibc-$(LN_PREFIX)$${app##$(REAL_GNU_TARGET_NAME)}; \
 		done; \
 	)
 
@@ -429,31 +436,31 @@ $(STAMP_DIR)/gcc_libs_target_installed: $(GCC_BUILD_DIR3)/.installed
 ifeq ($(BR2_GCC_SHARED_LIBGCC),y)
 	# These go in /lib, so...
 	rm -rf $(TARGET_DIR)/usr/lib/libgcc_s*.so*
-	-cp -dpf $(HOST_DIR)/usr/$(REAL_GNU_TARGET_NAME)/lib*/libgcc_s* \
+	-cp -dpf $(TOOLCHAINS_DIR)/$(REAL_GNU_TARGET_NAME)/lib*/libgcc_s* \
 		$(STAGING_DIR)/lib/
-	-cp -dpf $(HOST_DIR)/usr/$(REAL_GNU_TARGET_NAME)/lib*/libgcc_s* \
+	-cp -dpf $(TOOLCHAINS_DIR)/$(REAL_GNU_TARGET_NAME)/lib*/libgcc_s* \
 		$(TARGET_DIR)/lib/
 	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/lib/libgcc_s*
 endif
 ifeq ($(BR2_INSTALL_LIBSTDCPP),y)
 ifeq ($(BR2_GCC_SHARED_LIBGCC),y)
 	mkdir -p $(TARGET_DIR)/usr/lib
-	-cp -dpf $(HOST_DIR)/usr/$(REAL_GNU_TARGET_NAME)/lib*/libstdc++.so* \
+	-cp -dpf $(TOOLCHAINS_DIR)/$(REAL_GNU_TARGET_NAME)/lib*/libstdc++.so* \
 		$(STAGING_DIR)/usr/lib/
-	-cp -dpf $(HOST_DIR)/usr/$(REAL_GNU_TARGET_NAME)/lib*/libstdc++.so* \
+	-cp -dpf $(TOOLCHAINS_DIR)/$(REAL_GNU_TARGET_NAME)/lib*/libstdc++.so* \
 		$(TARGET_DIR)/usr/lib/
 	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libstdc++.so*
 endif
 endif
 ifeq ($(BR2_GCC_ENABLE_OPENMP),y)
-	cp -dpf $(HOST_DIR)/usr/$(REAL_GNU_TARGET_NAME)/lib*/libgomp.so* $(STAGING_DIR)/usr/lib/
-	cp -dpf $(HOST_DIR)/usr/$(REAL_GNU_TARGET_NAME)/lib*/libgomp.so* $(TARGET_DIR)/usr/lib/
+	cp -dpf $(TOOLCHAINS_DIR)/$(REAL_GNU_TARGET_NAME)/lib*/libgomp.so* $(STAGING_DIR)/usr/lib/
+	cp -dpf $(TOOLCHAINS_DIR)/$(REAL_GNU_TARGET_NAME)/lib*/libgomp.so* $(TARGET_DIR)/usr/lib/
 	-$(STRIPCMD) $(STRIP_STRIP_UNNEEDED) $(TARGET_DIR)/usr/lib/libgomp.so*
 endif
 	mkdir -p $(@D)
 	touch $@
 
-cross_compiler:=$(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-gcc
+cross_compiler:=$(TOOLCHAINS_DIR)/bin/$(REAL_GNU_TARGET_NAME)-gcc
 cross_compiler gcc: gcc_intermediate \
 	$(LIBFLOAT_TARGET) uclibc $(GCC_BUILD_DIR3)/.installed \
 	$(STAMP_DIR)/gcc_libs_target_installed \
@@ -464,8 +471,8 @@ gcc-source: $(DL_DIR)/$(GCC_SOURCE)
 gcc-clean:
 	rm -rf $(GCC_BUILD_DIR3)
 	for prog in cpp gcc gcc-[0-9]* protoize unprotoize gcov gccbug cc; do \
-		rm -f $(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-$$prog; \
-		rm -f $(HOST_DIR)/usr/bin/$(GNU_TARGET_NAME)-$$prog; \
+		rm -f $(TOOLCHAINS_DIR)/bin/$(REAL_GNU_TARGET_NAME)-$$prog; \
+		rm -f $(TOOLCHAINS_DIR)/bin/$(GNU_TARGET_NAME)-$$prog; \
 	done
 
 gcc-dirclean: gcc_initial-dirclean

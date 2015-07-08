@@ -10,7 +10,7 @@ DBUS_PYTHON_INSTALL_STAGING = YES
 DBUS_PYTHON_INSTALL_TARGET = YES
 
 DBUS_PYTHON_CONF_ENV = am_cv_pathless_PYTHON=python \
-		ac_cv_path_PYTHON=$(HOST_DIR)/usr/bin/python \
+		ac_cv_path_PYTHON=$(TOOLCHAINS_DIR)/bin/python \
 		am_cv_python_version=$(PYTHON_VERSION) \
 		am_cv_python_platform=linux2 \
 		am_cv_python_pythondir=/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages \

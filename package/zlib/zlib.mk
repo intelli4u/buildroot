@@ -32,7 +32,7 @@ define HOST_ZLIB_CONFIGURE_CMDS
 		$(HOST_CONFIGURE_ARGS) \
 		$(HOST_CONFIGURE_OPTS) \
 		./configure \
-		--prefix="$(HOST_DIR)/usr" \
+		--prefix="$(TOOLCHAINS_DIR)" \
 		--sysconfdir="$(HOST_DIR)/etc" \
 	)
 endef

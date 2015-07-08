@@ -40,7 +40,7 @@ LINUX_MAKE_FLAGS = \
 	ARCH=$(KERNEL_ARCH) \
 	INSTALL_MOD_PATH=$(TARGET_DIR) \
 	CROSS_COMPILE="$(CCACHE) $(TARGET_CROSS)" \
-	DEPMOD=$(HOST_DIR)/usr/sbin/depmod
+	DEPMOD=$(TOOLCHAINS_DIR)/sbin/depmod
 
 # Get the real Linux version, which tells us where kernel modules are
 # going to be installed in the target filesystem.
@@ -177,7 +177,7 @@ define LINUX_INSTALL_TARGET_CMDS
 	# directories, not relevant on the target
 	@if grep -q "CONFIG_MODULES=y" $(@D)/.config; then 	\
 		$(TARGET_MAKE_ENV) $(MAKE1) $(LINUX_MAKE_FLAGS) -C $(@D) 		\
-			DEPMOD="$(HOST_DIR)/usr/sbin/depmod" modules_install ;		\
+			DEPMOD="$(TOOLCHAINS_DIR)/sbin/depmod" modules_install ;		\
 		rm -f $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/build ;		\
 		rm -f $(TARGET_DIR)/lib/modules/$(LINUX_VERSION_PROBED)/source ;	\
 	fi

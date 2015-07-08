@@ -71,7 +71,7 @@ ifeq ($(5),target)
 define $(2)_CONFIGURE_CMDS
 	(cd $$($$(PKG)_BUILDDIR) && \
 	rm -f CMakeCache.txt && \
-	$$($$(PKG)_CONF_ENV) $(HOST_DIR)/usr/bin/cmake $$($$(PKG)_SRCDIR) \
+	$$($$(PKG)_CONF_ENV) $(TOOLCHAINS_DIR)/bin/cmake $$($$(PKG)_SRCDIR) \
 		-DCMAKE_TOOLCHAIN_FILE="$$(BASE_DIR)/toolchainfile.cmake" \
 		-DCMAKE_INSTALL_PREFIX="/usr" \
 		$$($$(PKG)_CONF_OPT) \
@@ -83,13 +83,13 @@ else
 define $(2)_CONFIGURE_CMDS
 	(cd $$($$(PKG)_BUILDDIR) && \
 	rm -f CMakeCache.txt && \
-	$(HOST_DIR)/usr/bin/cmake $$($$(PKG)_SRCDIR) \
+	$(TOOLCHAINS_DIR)/bin/cmake $$($$(PKG)_SRCDIR) \
 		-DCMAKE_INSTALL_SO_NO_EXE=0 \
 		-DCMAKE_FIND_ROOT_PATH="$$(HOST_DIR)" \
 		-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM="BOTH" \
 		-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY="BOTH" \
 		-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE="BOTH" \
-		-DCMAKE_INSTALL_PREFIX="$$(HOST_DIR)/usr" \
+		-DCMAKE_INSTALL_PREFIX="$$(TOOLCHAINS_DIR)" \
 		$$($$(PKG)_CONF_OPT) \
 	)
 endef

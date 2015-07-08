@@ -13,4 +13,4 @@ LZMA_CONF_OPT = $(if $(BR2_ENABLE_DEBUG),--enable-debug,--disable-debug)
 $(eval $(call AUTOTARGETS))
 $(eval $(call AUTOTARGETS,host))
 
-LZMA=$(HOST_DIR)/usr/bin/lzma
+LZMA=$(TOOLCHAINS_DIR)/bin/lzma

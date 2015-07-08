@@ -48,7 +48,7 @@ define HOST_UBOOT_TOOLS_BUILD_CMDS
 endef
 
 define HOST_UBOOT_TOOLS_INSTALL_CMDS
-	$(INSTALL) -m 0755 -D $(@D)/tools/mkimage $(HOST_DIR)/usr/bin/mkimage
+	$(INSTALL) -m 0755 -D $(@D)/tools/mkimage $(TOOLCHAINS_DIR)/bin/mkimage
 endef
 
 $(eval $(call GENTARGETS))

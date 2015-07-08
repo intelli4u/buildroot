@@ -36,4 +36,4 @@ $(eval $(call AUTOTARGETS))
 $(eval $(call AUTOTARGETS,host))
 
 # dbus-glib for the host
-DBUS_GLIB_HOST_BINARY:=$(HOST_DIR)/usr/bin/dbus-binding-tool
+DBUS_GLIB_HOST_BINARY:=$(TOOLCHAINS_DIR)/bin/dbus-binding-tool

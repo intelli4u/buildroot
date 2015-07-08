@@ -135,7 +135,7 @@ define $(2)_CONFIGURE_CMDS
 		LDFLAGS="$$(HOST_LDFLAGS)" \
                 $$($$(PKG)_CONF_ENV) \
 		./configure \
-		--prefix="$$(HOST_DIR)/usr" \
+		--prefix="$$(TOOLCHAINS_DIR)" \
 		--sysconfdir="$$(HOST_DIR)/etc" \
 		--enable-shared --disable-static \
 		$$($$(PKG)_CONF_OPT) \

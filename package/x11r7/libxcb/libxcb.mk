@@ -14,7 +14,7 @@ LIBXCB_DEPENDENCIES = \
 	host-xcb-proto host-python host-pkg-config
 LIBXCB_CONF_ENV = STAGING_DIR="$(STAGING_DIR)"
 LIBXCB_MAKE_OPT = XCBPROTO_XCBINCLUDEDIR=$(STAGING_DIR)/usr/share/xcb \
-	XCBPROTO_XCBPYTHONDIR=$(HOST_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages
+	XCBPROTO_XCBPYTHONDIR=$(TOOLCHAINS_DIR)/lib/python$(PYTHON_VERSION_MAJOR)/site-packages
 LIBXCB_CONF_OPT = --disable-build-docs
 
 HOST_LIBXCB_CONF_OPT = --disable-build-docs

@@ -99,7 +99,7 @@ endef
 
 define HOST_BZIP2_INSTALL_CMDS
 	$(HOST_MAKE_ENV) \
-	$(MAKE) PREFIX=$(HOST_DIR)/usr -C $(@D) install
+	$(MAKE) PREFIX=$(TOOLCHAINS_DIR) -C $(@D) install
 endef
 
 $(eval $(call GENTARGETS))

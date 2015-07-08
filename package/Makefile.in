@@ -46,9 +46,9 @@ TARGET_ABI+=-mabi=spe -mfloat-gprs=double -Wa,-me500mc
 endif
 endif
 
-REAL_GNU_TARGET_NAME=$(ARCH)-unknown-linux-$(LIBC)$(ABI)
+REAL_GNU_TARGET_NAME=$(ARCH)-brcm-linux-$(LIBC)$(ABI)
 
-STAGING_DIR=$(HOST_DIR)/usr/$(REAL_GNU_TARGET_NAME)/sysroot
+STAGING_DIR=$(TOOLCHAINS_DIR)/$(REAL_GNU_TARGET_NAME)/sysroot
 
 ifeq ($(BR2_OPTIMIZE_0),y)
 TARGET_OPTIMIZATION+=-O0
@@ -95,13 +95,13 @@ TARGET_CXXFLAGS=$(TARGET_CFLAGS)
 TARGET_LDFLAGS=$(call qstrip,$(BR2_TARGET_LDFLAGS))
 
 ifeq ($(BR2_TOOLCHAIN_BUILDROOT)$(BR2_TOOLCHAIN_CTNG),y)
-TARGET_CROSS=$(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-
+TARGET_CROSS=$(TOOLCHAINS_DIR)/bin/$(REAL_GNU_TARGET_NAME)-
 else
-TARGET_CROSS=$(HOST_DIR)/usr/bin/$(call qstrip,$(BR2_TOOLCHAIN_EXTERNAL_PREFIX))-
+TARGET_CROSS=$(TOOLCHAINS_DIR)/bin/$(call qstrip,$(BR2_TOOLCHAIN_EXTERNAL_PREFIX))-
 endif
 
 # Quotes are needed for spaces et al in path components.
-TARGET_PATH="$(HOST_DIR)/bin:$(HOST_DIR)/usr/bin:$(HOST_DIR)/usr/sbin/:$(PATH)"
+TARGET_PATH="$(HOST_DIR)/bin:$(TOOLCHAINS_DIR)/bin:$(TOOLCHAINS_DIR)/sbin/:$(PATH)"
 
 # Define TARGET_xx variables for all common binutils/gcc tools by
 # including the --sysroot option where necessary.
@@ -137,7 +137,7 @@ ifeq ($(BR2_STRIP_sstrip),y)
 STRIP_DISCARD_ALL:=
 STRIP_STRIP_UNNEEDED:=
 STRIP_STRIP_ALL:=
-TARGET_STRIP=$(HOST_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-sstrip
+TARGET_STRIP=$(TOOLCHAINS_DIR)/bin/$(REAL_GNU_TARGET_NAME)-sstrip
 STRIPCMD=$(TARGET_STRIP)
 KSTRIPCMD=$(TARGET_CROSS)strip --remove-section=.comment --remove-section=.note --strip-unneeded
 endif
@@ -152,16 +152,16 @@ BISON:=$(shell which bison || type -p bison)
 SED:=$(shell which sed || type -p sed) -i -e
 
 HOST_CFLAGS   ?= -O2
-HOST_CFLAGS   += -I$(HOST_DIR)/include -I$(HOST_DIR)/usr/include
-HOST_CXXFLAGS += -I$(HOST_DIR)/include -I$(HOST_DIR)/usr/include
-HOST_LDFLAGS  += -L$(HOST_DIR)/lib -L$(HOST_DIR)/usr/lib -Wl,-rpath,$(HOST_DIR)/usr/lib
-HOST_PATH=$(HOST_DIR)/bin:$(HOST_DIR)/usr/bin:$(PATH)
+HOST_CFLAGS   += -I$(HOST_DIR)/include -I$(TOOLCHAINS_DIR)/include
+HOST_CXXFLAGS += -I$(HOST_DIR)/include -I$(TOOLCHAINS_DIR)/include
+HOST_LDFLAGS  += -L$(HOST_DIR)/lib -L$(TOOLCHAINS_DIR)/lib -Wl,-rpath,$(TOOLCHAINS_DIR)/lib
+HOST_PATH=$(HOST_DIR)/bin:$(TOOLCHAINS_DIR)/bin:$(PATH)
 
 # hostcc version as an integer - E.G. 4.3.2 => 432
 HOSTCC_VERSION:=$(shell $(HOSTCC_NOCCACHE) --version | \
 	sed -n 's/^.* \([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)[ ]*.*$$/\1\2\3/p')
 
-TARGET_CONFIGURE_OPTS=PATH=$(TARGET_PATH) \
+TARGET_CONFIGURE_OPTS=PATH="$(TARGET_PATH)" \
 		AR="$(TARGET_AR)" \
 		AS="$(TARGET_AS)" \
 		LD="$(TARGET_LD)" \
@@ -193,13 +193,13 @@ TARGET_CONFIGURE_OPTS=PATH=$(TARGET_PATH) \
 		LDFLAGS="$(TARGET_LDFLAGS)" \
 		FCFLAGS="$(TARGET_FCFLAGS)" \
 		PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
-		PERLLIB="$(HOST_DIR)/usr/lib/perl" \
+		PERLLIB="$(TOOLCHAINS_DIR)/lib/perl" \
 		STAGING_DIR="$(STAGING_DIR)"
 
-TARGET_MAKE_ENV=PATH=$(TARGET_PATH) \
-		PERLLIB="$(HOST_DIR)/usr/lib/perl"
+TARGET_MAKE_ENV=PATH="$(TARGET_PATH)" \
+		PERLLIB="$(TOOLCHAINS_DIR)/lib/perl"
 
-HOST_CONFIGURE_OPTS=PATH=$(HOST_PATH) \
+HOST_CONFIGURE_OPTS=PATH="$(HOST_PATH)" \
 		AR="$(HOSTAR)" \
 		AS="$(HOSTAS)" \
 		LD="$(HOSTLD)" \
@@ -215,15 +215,15 @@ HOST_CONFIGURE_OPTS=PATH=$(HOST_PATH) \
 		PKG_CONFIG_ALLOW_SYSTEM_LIBS=1 \
 		PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
 		PKG_CONFIG_SYSROOT_DIR="/" \
-		PKG_CONFIG_LIBDIR="$(HOST_DIR)/usr/lib/pkgconfig:$(HOST_DIR)/usr/share/pkgconfig" \
-		PERLLIB="$(HOST_DIR)/usr/lib/perl" \
-		LD_LIBRARY_PATH="$(HOST_DIR)/usr/lib:$(LD_LIBRARY_PATH)"
+		PKG_CONFIG_LIBDIR="$(TOOLCHAINS_DIR)/lib/pkgconfig:$(TOOLCHAINS_DIR)/share/pkgconfig" \
+		PERLLIB="$(TOOLCHAINS_DIR)/lib/perl" \
+		LD_LIBRARY_PATH="$(TOOLCHAINS_DIR)/lib:$(LD_LIBRARY_PATH)"
 
-HOST_MAKE_ENV=PATH=$(HOST_PATH) \
-		LD_LIBRARY_PATH="$(HOST_DIR)/usr/lib:$(LD_LIBRARY_PATH)" \
+HOST_MAKE_ENV=PATH="$(HOST_PATH)" \
+		LD_LIBRARY_PATH="$(TOOLCHAINS_DIR)/lib:$(LD_LIBRARY_PATH)" \
 		PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
-		PKG_CONFIG_LIBDIR="$(HOST_DIR)/usr/lib/pkgconfig" \
-		PERLLIB="$(HOST_DIR)/usr/lib/perl"
+		PKG_CONFIG_LIBDIR="$(TOOLCHAINS_DIR)/lib/pkgconfig" \
+		PERLLIB="$(TOOLCHAINS_DIR)/lib/perl"
 
 
 #######################################################################

@@ -9,9 +9,9 @@ define HOST_CLOOP_BUILD_CMDS
 endef
 
 define HOST_CLOOP_INSTALL_CMDS
-	$(INSTALL) -m 0755 -d $(HOST_DIR)/usr/bin
-	$(INSTALL) -m 755 $(@D)/create_compressed_fs $(HOST_DIR)/usr/bin
-	$(INSTALL) -m 755 $(@D)/extract_compressed_fs $(HOST_DIR)/usr/bin
+	$(INSTALL) -m 0755 -d $(TOOLCHAINS_DIR)/bin
+	$(INSTALL) -m 755 $(@D)/create_compressed_fs $(TOOLCHAINS_DIR)/bin
+	$(INSTALL) -m 755 $(@D)/extract_compressed_fs $(TOOLCHAINS_DIR)/bin
 endef
 
 $(eval $(call GENTARGETS))

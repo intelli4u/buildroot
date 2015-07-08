@@ -12,12 +12,12 @@ LIBXML_PARSER_PERL_DEPENDENCIES = expat
 define HOST_LIBXML_PARSER_PERL_CONFIGURE_CMDS
  (cd $(@D) ; \
    perl Makefile.PL \
-        PREFIX=$(HOST_DIR)/usr \
-        EXPATLIBPATH=$(HOST_DIR)/usr/lib \
-        EXPATINCPATH=$(HOST_DIR)/usr/include \
+        PREFIX=$(TOOLCHAINS_DIR) \
+        EXPATLIBPATH=$(TOOLCHAINS_DIR)/lib \
+        EXPATINCPATH=$(TOOLCHAINS_DIR)/include \
         INSTALLDIRS=site \
-        INSTALLSITELIB=$(HOST_DIR)/usr/lib/perl \
-        INSTALLSITEARCH=$(HOST_DIR)/usr/lib/perl \
+        INSTALLSITELIB=$(TOOLCHAINS_DIR)/lib/perl \
+        INSTALLSITEARCH=$(TOOLCHAINS_DIR)/lib/perl \
  )
 endef
 

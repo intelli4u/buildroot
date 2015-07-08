@@ -14,12 +14,12 @@ define PYTHON_NETIFACES_BUILD_CMDS
 	(cd $(@D); \
 		PYTHONXCPREFIX="$(STAGING_DIR)/usr/" \
 		LDFLAGS="-L$(STAGING_DIR)/lib -L$(STAGING_DIR)/usr/lib" \
-	$(HOST_DIR)/usr/bin/python setup.py build -x)
+	$(TOOLCHAINS_DIR)/bin/python setup.py build -x)
 endef
 
 define PYTHON_NETIFACES_INSTALL_TARGET_CMDS
 	(cd $(@D); PYTHONPATH=$(TARGET_DIR)/usr/lib/python$(PYTHON_VERSION_MAJOR)/site-packages \
-	$(HOST_DIR)/usr/bin/python setup.py install --prefix=$(TARGET_DIR)/usr)
+	$(TOOLCHAINS_DIR)/bin/python setup.py install --prefix=$(TARGET_DIR)/usr)
 endef
 
 $(eval $(call GENTARGETS))

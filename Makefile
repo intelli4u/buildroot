@@ -36,7 +36,7 @@ endif
 .NOTPARALLEL:
 
 # absolute path
-TOPDIR:=$(shell pwd)
+export TOPDIR:=$(shell pwd)
 CONFIG_CONFIG_IN=Config.in
 CONFIG=support/kconfig
 DATE:=$(shell date +%Y%m%d)
@@ -276,6 +276,8 @@ GNU_TARGET_SUFFIX:=-$(call qstrip,$(BR2_GNU_TARGET_SUFFIX))
 # packages compiled for the host go here
 HOST_DIR:=$(call qstrip,$(BR2_HOST_DIR))
 
+TOOLCHAINS_DIR:=$(call qstrip,$(BR2_STAGING_DIR))
+
 # stamp (dependency) files go here
 STAMP_DIR:=$(BASE_DIR)/stamps
 
@@ -285,7 +287,7 @@ TOOLCHAIN_DIR=$(BASE_DIR)/toolchain
 TARGET_SKELETON=$(TOPDIR)/fs/skeleton
 
 ifeq ($(BR2_CCACHE),y)
-CCACHE:=$(HOST_DIR)/usr/bin/ccache
+CCACHE:=$(TOOLCHAINS_DIR)/bin/ccache
 CCACHE_CACHE_DIR=$(HOME)/.buildroot-ccache
 HOSTCC  := $(CCACHE) $(HOSTCC)
 HOSTCXX := $(CCACHE) $(HOSTCXX)
@@ -385,7 +387,7 @@ $(O)/toolchainfile.cmake:
 	set(CMAKE_C_FLAGS \"\$${CMAKE_C_FLAGS} $(TARGET_CFLAGS)\" CACHE STRING \"Buildroot CFLAGS\" FORCE)\n\
 	set(CMAKE_CXX_FLAGS \"\$${CMAKE_CXX_FLAGS} $(TARGET_CXXFLAGS)\" CACHE STRING \"Buildroot CXXFLAGS\" FORCE)\n\
 	set(CMAKE_INSTALL_SO_NO_EXE 0)\n\
-	set(CMAKE_PROGRAM_PATH \"$(HOST_DIR)/usr/bin\")\n\
+	set(CMAKE_PROGRAM_PATH \"$(TOOLCHAINS_DIR)/bin\")\n\
 	set(CMAKE_FIND_ROOT_PATH \"$(STAGING_DIR)\")\n\
 	set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)\n\
 	set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)\n\
@@ -482,6 +484,11 @@ endif
 ifneq ($(BR2_ROOTFS_POST_BUILD_SCRIPT),"")
 	$(BR2_ROOTFS_POST_BUILD_SCRIPT) $(TARGET_DIR)
 endif
+	# BRCM, copy staging libs and libc.a to ./lib 
+	# that we will have same toolchains environment as old versions.
+	rm -rf $(STAGING_DIR)/lib/lib
+	cp -f $(STAGING_DIR)/lib/* $(TOOLCHAINS_DIR)/lib
+	cp -f $(STAGING_DIR)/usr/lib/libc.a $(TOOLCHAINS_DIR)/lib/
 
 ifeq ($(BR2_ENABLE_LOCALE_PURGE),y)
 LOCALE_WHITELIST=$(BUILD_DIR)/locales.nopurge

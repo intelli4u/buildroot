@@ -9,7 +9,7 @@ SHARED_MIME_INFO_SITE = http://freedesktop.org/~hadess
 
 SHARED_MIME_INFO_INSTALL_STAGING = YES
 
-SHARED_MIME_INFO_CONF_ENV = XMLLINT=$(HOST_DIR)/usr/bin/xmllint
+SHARED_MIME_INFO_CONF_ENV = XMLLINT=$(TOOLCHAINS_DIR)/bin/xmllint
 SHARED_MIME_INFO_DEPENDENCIES = host-pkg-config host-libglib2 host-libxml2 host-shared-mime-info libxml2 libglib2
 
 SHARED_MIME_INFO_CONF_OPT = --disable-update-mimedb
@@ -29,4 +29,4 @@ $(eval $(call AUTOTARGETS))
 $(eval $(call AUTOTARGETS,host))
 
 # shared-mime-info for the host
-SHARED_MIME_INFO_HOST_BINARY:=$(HOST_DIR)/usr/bin/update-mime-database
+SHARED_MIME_INFO_HOST_BINARY:=$(TOOLCHAINS_DIR)/bin/update-mime-database

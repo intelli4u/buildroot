@@ -22,8 +22,8 @@ define HOST_MTD_INSTALL_CMDS
 	$(MAKE1) BUILDDIR=$(@D) DESTDIR=$(HOST_DIR) -C $(@D) install
 endef
 
-MKFS_JFFS2 = $(HOST_DIR)/usr/sbin/mkfs.jffs2
-SUMTOOL = $(HOST_DIR)/usr/sbin/sumtool
+MKFS_JFFS2 = $(TOOLCHAINS_DIR)/sbin/mkfs.jffs2
+SUMTOOL = $(TOOLCHAINS_DIR)/sbin/sumtool
 
 MTD_TARGETS_$(BR2_PACKAGE_MTD_DOCFDISK)		+= docfdisk
 MTD_TARGETS_$(BR2_PACKAGE_MTD_DOC_LOADBIOS)	+= doc_loadbios

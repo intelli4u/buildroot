@@ -31,8 +31,8 @@ HOST_PYTHON_CONF_OPT += 	\
 	--disable-ssl
 
 HOST_PYTHON_MAKE_ENV = \
-	PYTHON_MODULES_INCLUDE=$(HOST_DIR)/usr/include \
-	PYTHON_MODULES_LIB="$(HOST_DIR)/lib $(HOST_DIR)/usr/lib"
+	PYTHON_MODULES_INCLUDE=$(TOOLCHAINS_DIR)/include \
+	PYTHON_MODULES_LIB="$(HOST_DIR)/lib $(TOOLCHAINS_DIR)/lib"
 
 HOST_PYTHON_AUTORECONF = YES
 
@@ -43,7 +43,7 @@ define HOST_PYTHON_CONFIGURE_CMDS
 		LDFLAGS="$(HOST_LDFLAGS)" \
                 $(HOST_PYTHON_CONF_ENV) \
 		./configure \
-		--prefix="$(HOST_DIR)/usr" \
+		--prefix="$(TOOLCHAINS_DIR)" \
 		--sysconfdir="$(HOST_DIR)/etc" \
 		$(HOST_PYTHON_CONF_OPT) \
 	)
