@@ -1,0 +1,15 @@
+Refer http://lists.uclibc.org/pipermail/uclibc/2009-April/042369.html to get the solution
+
+diff --git a/Rules.mak b/Rules.mak
+index d13d158..68ee677 100755
+--- a/Rules.mak
++++ b/Rules.mak
+@@ -619,7 +619,7 @@ LDFLAGS_NOSTRIP += -Wl,$(LDFLAGS_GNUHASH)
+ endif
+ endif
+ 
+-LDFLAGS:=$(LDFLAGS_NOSTRIP) -Wl,-z,defs
++LDFLAGS:=$(LDFLAGS_NOSTRIP)
+ ifeq ($(DODEBUG),y)
+ CFLAGS += -O0 -g3 -DDEBUG
+ else
