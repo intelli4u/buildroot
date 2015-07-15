@@ -101,7 +101,7 @@ TARGET_CROSS=$(TOOLCHAINS_DIR)/bin/$(call qstrip,$(BR2_TOOLCHAIN_EXTERNAL_PREFIX
 endif
 
 # Quotes are needed for spaces et al in path components.
-TARGET_PATH="$(HOST_DIR)/bin:$(TOOLCHAINS_DIR)/bin:$(TOOLCHAINS_DIR)/sbin/:$(PATH)"
+TARGET_PATH=$(call normalize-path, $(HOST_DIR)/bin:$(TOOLCHAINS_DIR)/bin:$(TOOLCHAINS_DIR)/sbin/:$(PATH))
 
 # Define TARGET_xx variables for all common binutils/gcc tools by
 # including the --sysroot option where necessary.
@@ -155,13 +155,13 @@ HOST_CFLAGS   ?= -O2
 HOST_CFLAGS   += -I$(HOST_DIR)/include -I$(TOOLCHAINS_DIR)/include
 HOST_CXXFLAGS += -I$(HOST_DIR)/include -I$(TOOLCHAINS_DIR)/include
 HOST_LDFLAGS  += -L$(HOST_DIR)/lib -L$(TOOLCHAINS_DIR)/lib -Wl,-rpath,$(TOOLCHAINS_DIR)/lib
-HOST_PATH=$(HOST_DIR)/bin:$(TOOLCHAINS_DIR)/bin:$(PATH)
+HOST_PATH=$(call normalize-path, $(HOST_DIR)/bin:$(TOOLCHAINS_DIR)/bin:$(PATH))
 
 # hostcc version as an integer - E.G. 4.3.2 => 432
 HOSTCC_VERSION:=$(shell $(HOSTCC_NOCCACHE) --version | \
 	sed -n 's/^.* \([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)[ ]*.*$$/\1\2\3/p')
 
-TARGET_CONFIGURE_OPTS=PATH="$(TARGET_PATH)" \
+TARGET_CONFIGURE_OPTS=PATH=$(call normalize-path, $(TARGET_PATH)) \
 		AR="$(TARGET_AR)" \
 		AS="$(TARGET_AS)" \
 		LD="$(TARGET_LD)" \
@@ -196,10 +196,10 @@ TARGET_CONFIGURE_OPTS=PATH="$(TARGET_PATH)" \
 		PERLLIB="$(TOOLCHAINS_DIR)/lib/perl" \
 		STAGING_DIR="$(STAGING_DIR)"
 
-TARGET_MAKE_ENV=PATH="$(TARGET_PATH)" \
+TARGET_MAKE_ENV=PATH=$(call normalize-path, $(TARGET_PATH)) \
 		PERLLIB="$(TOOLCHAINS_DIR)/lib/perl"
 
-HOST_CONFIGURE_OPTS=PATH="$(HOST_PATH)" \
+HOST_CONFIGURE_OPTS=PATH=$(call normalize-path, $(HOST_PATH)) \
 		AR="$(HOSTAR)" \
 		AS="$(HOSTAS)" \
 		LD="$(HOSTLD)" \
@@ -219,7 +219,7 @@ HOST_CONFIGURE_OPTS=PATH="$(HOST_PATH)" \
 		PERLLIB="$(TOOLCHAINS_DIR)/lib/perl" \
 		LD_LIBRARY_PATH="$(TOOLCHAINS_DIR)/lib:$(LD_LIBRARY_PATH)"
 
-HOST_MAKE_ENV=PATH="$(HOST_PATH)" \
+HOST_MAKE_ENV=PATH=$(call normalize-path, $(HOST_PATH)) \
 		LD_LIBRARY_PATH="$(TOOLCHAINS_DIR)/lib:$(LD_LIBRARY_PATH)" \
 		PKG_CONFIG="$(PKG_CONFIG_HOST_BINARY)" \
 		PKG_CONFIG_LIBDIR="$(TOOLCHAINS_DIR)/lib/pkgconfig" \

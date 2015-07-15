@@ -28,7 +28,7 @@ $(STAGING_DIR)/mklibs-stamp: $(MKLIBS_PROGRAM) $(MKLIBS_PYTHON) $(STAGING_DIR)/l
 	find $(TARGET_DIR) -type f -perm +100 -exec \
 	    file -r -N -F '' {} + | \
 	    awk ' /executable.*dynamically/ { print $$1 }' > $(STAGING_DIR)/mklibs-progs
-	cd $(TARGET_DIR); PATH=$(PATH):$(STAGING_DIR)/bin $(MKLIBS_PYTHON) $(MKLIBS_PROGRAM) \
+	cd $(TARGET_DIR); PATH=$(call normalize-path, $(PATH):$(STAGING_DIR)/bin) $(MKLIBS_PYTHON) $(MKLIBS_PROGRAM) \
 	    --target $(REAL_GNU_TARGET_NAME) --root $(STAGING_DIR) -d ./ \
 	    `cat $(STAGING_DIR)/mklibs-progs`
 	touch $@
