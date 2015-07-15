@@ -293,6 +293,8 @@ HOSTCC  := $(CCACHE) $(HOSTCC)
 HOSTCXX := $(CCACHE) $(HOSTCXX)
 endif
 
+include support/utils/definitions.mk
+
 include toolchain/Makefile.in
 include package/Makefile.in
 
