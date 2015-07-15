@@ -18,7 +18,7 @@ CTNG_CONFIG_FILE:=$(call qstrip,$(BR2_TOOLCHAIN_CTNG_CONFIG))
 # to calling ct-ng.
 # $1: the set of arguments to pass to ct-ng
 define ctng
-PATH=$(HOST_PATH) ct-ng -C $(CTNG_DIR) --no-print-directory $(1)
+PATH=$(call normalize-path, $(HOST_PATH)) ct-ng -C $(CTNG_DIR) --no-print-directory $(1)
 endef
 
 #-----------------------------------------------------------------------------

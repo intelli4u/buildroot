@@ -255,7 +255,7 @@ endif
 
 gcc_initial=$(GCC_BUILD_DIR1)/.installed
 $(gcc_initial) $(TOOLCHAINS_DIR)/bin/$(REAL_GNU_TARGET_NAME)-gcc: $(GCC_BUILD_DIR1)/.compiled
-	PATH=$(TARGET_PATH) $(MAKE) -C $(GCC_BUILD_DIR1) install-gcc
+	PATH=$(call normalize-path, $(TARGET_PATH)) $(MAKE) -C $(GCC_BUILD_DIR1) install-gcc
 	touch $(gcc_initial)
 
 gcc_initial: $(GCC_HOST_PREREQ) host-binutils $(TOOLCHAINS_DIR)/bin/$(REAL_GNU_TARGET_NAME)-gcc
@@ -325,9 +325,9 @@ gcc_intermediate=$(GCC_BUILD_DIR2)/.installed
 $(gcc_intermediate): $(GCC_BUILD_DIR2)/.compiled
 	# gcc >= 4.3.0 have to also install install-target-libgcc
 ifeq ($(BR2_GCC_SUPPORTS_FINEGRAINEDMTUNE),y)
-	PATH=$(TARGET_PATH) $(MAKE) -C $(GCC_BUILD_DIR2) install-gcc install-target-libgcc
+	PATH=$(call normalize-path, $(TARGET_PATH)) $(MAKE) -C $(GCC_BUILD_DIR2) install-gcc install-target-libgcc
 else
-	PATH=$(TARGET_PATH) $(MAKE) -C $(GCC_BUILD_DIR2) install-gcc
+	PATH=$(call normalize-path, $(TARGET_PATH)) $(MAKE) -C $(GCC_BUILD_DIR2) install-gcc
 endif
 	touch $(gcc_intermediate)
 
@@ -395,7 +395,7 @@ $(GCC_BUILD_DIR3)/.compiled: $(GCC_BUILD_DIR3)/.configured
 	touch $@
 
 $(GCC_BUILD_DIR3)/.installed: $(GCC_BUILD_DIR3)/.compiled
-	PATH=$(TARGET_PATH) $(MAKE) \
+	PATH=$(call normalize-path, $(TARGET_PATH)) $(MAKE) \
 		-C $(GCC_BUILD_DIR3) install
 	if [ -d "$(STAGING_DIR)/lib64" ]; then \
 		if [ ! -e "$(STAGING_DIR)/lib" ]; then \
@@ -529,7 +529,7 @@ $(GCC_BUILD_DIR4)/.configured: $(GCC_BUILD_DIR4)/.prepared
 	touch $@
 
 $(GCC_BUILD_DIR4)/.compiled: $(GCC_BUILD_DIR4)/.configured
-	PATH=$(TARGET_PATH) \
+	PATH=$(call normalize-path, $(TARGET_PATH)) \
 	$(MAKE) -C $(GCC_BUILD_DIR4) all
 	touch $@
 
@@ -541,7 +541,7 @@ GCC_INCLUDE_DIR:=include-fixed
 endif
 
 $(TARGET_DIR)/usr/bin/gcc: $(GCC_BUILD_DIR4)/.compiled
-	PATH=$(TARGET_PATH) DESTDIR=$(TARGET_DIR) \
+	PATH=$(call normalize-path, $(TARGET_PATH)) DESTDIR=$(TARGET_DIR) \
 		$(MAKE1) -C $(GCC_BUILD_DIR4) install
 	# Remove broken specs file (cross compile flag is set).
 	rm -f $(TARGET_DIR)/usr/$(GCC_LIB_SUBDIR)/specs
