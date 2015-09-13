@@ -1,0 +1,26 @@
+diff --git a/configure b/configure
+index 07b9fda..e69dadb 100755
+--- a/configure
++++ b/configure
+@@ -5276,7 +5276,7 @@ echo "include_mpn(\`sparc32/sparc-defs.m4')" >> $gmp_tmpconfigm4i
+ 	    cclist_64="$cclist_64 cc"
+ 	    cc_64_cflags="-xO3 -m64"
+ 	    ;;
+-	  *-*-mingw*)
++	  *-*-mingw* | *-*-cygwin)
+ 	    limb_64=longlong
+ 	    path_64=""	# Windows amd64 calling conventions are *different*
+ 	    # Silence many pedantic warnings for w64.  FIXME.
+diff --git a/configure.in b/configure.in
+index a636fbe..8e15575 100644
+--- a/configure.in
++++ b/configure.in
+@@ -1536,7 +1536,7 @@ case $host in
+ 	    cclist_64="$cclist_64 cc"
+ 	    cc_64_cflags="-xO3 -m64"
+ 	    ;;
+-	  *-*-mingw*)
++	  *-*-mingw* | *-*-cygwin)
+ 	    limb_64=longlong
+ 	    path_64=""	# Windows amd64 calling conventions are *different*
+ 	    # Silence many pedantic warnings for w64.  FIXME.
