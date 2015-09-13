@@ -1,0 +1,23 @@
+diff --git a/gmp-h.in b/gmp-h.in
+index d61435c..7526501 100644
+--- a/gmp-h.in
++++ b/gmp-h.in
+@@ -151,6 +151,7 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.  */
+    "void _export foo();".  Would have to change the __GMP_DECLSPEC syntax to
+    make use of that.  Probably more trouble than it's worth.  */
+ 
++#if __GMP_LIBGMP_DLL
+ #if defined (__GNUC__)
+ #define __GMP_DECLSPEC_EXPORT  __declspec(__dllexport__)
+ #define __GMP_DECLSPEC_IMPORT  __declspec(__dllimport__)
+@@ -167,6 +168,10 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.  */
+ #define __GMP_DECLSPEC_EXPORT  _Export
+ #define __GMP_DECLSPEC_IMPORT  _Import
+ #endif
++#else
++#define __GMP_DECLSPEC_EXPORT
++#define __GMP_DECLSPEC_IMPORT
++#endif
+ 
+ #if __GMP_LIBGMP_DLL
+ #if __GMP_WITHIN_GMP
