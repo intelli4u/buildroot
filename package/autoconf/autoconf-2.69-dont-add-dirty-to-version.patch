@@ -15,16 +15,16 @@ Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
  build-aux/git-version-gen |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: autoconf-2.65/build-aux/git-version-gen
+Index: autoconf-2.69/build-aux/git-version-gen
 ===================================================================
---- autoconf-2.65.orig/build-aux/git-version-gen
-+++ autoconf-2.65/build-aux/git-version-gen
-@@ -135,7 +135,7 @@ case "$dirty" in
-     *) # Append the suffix only if there isn't one already.
- 	case $v in
- 	  *-dirty) ;;
--	  *) v="$v-dirty" ;;
-+	  #*) v="$v-dirty" ;;
- 	esac ;;
- esac
- 
+--- autoconf-2.69.orig/build-aux/git-version-gen
++++ autoconf-2.69/build-aux/git-version-gen
+@@ -203,7 +203,7 @@ if test -n "$v_from_git"; then
+       *) # Append the suffix only if there isn't one already.
+           case $v in
+             *-dirty) ;;
++            #*) v="$v-dirty" ;;
+-            *) v="$v-dirty" ;;
+           esac ;;
+   esac
+ fi
