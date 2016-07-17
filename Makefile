@@ -114,6 +114,15 @@ ifneq ($(BR2_EXTERNAL_ERROR),)
 $(error $(BR2_EXTERNAL_ERROR))
 endif
 
+################################################################################
+#
+# staging and target directories do NOT list these as
+# dependencies anywhere else
+#
+################################################################################
+$(DL_DIR) $(TOOLCHAIN_DIR) $(BUILD_DIR) $(HOST_DIR) $(BINARIES_DIR) $(STAMP_DIR):
+	@mkdir -p $@
+
 # Pull in the user's configuration file
 ifeq ($(filter $(noconfig_targets),$(MAKECMDGOALS)),)
 -include $(CONFIG_DIR)/.config
@@ -433,15 +442,6 @@ $(O)/toolchainfile.cmake:
 	$(TARGETS_CLEAN) $(TARGETS_DIRCLEAN) $(TARGETS_SOURCE) \
 	$(DL_DIR) $(TOOLCHAIN_DIR) $(BUILD_DIR) $(STAGING_DIR) $(TARGET_DIR) \
 	$(HOST_DIR) $(BINARIES_DIR) $(STAMP_DIR)
-
-#############################################################
-#
-# staging and target directories do NOT list these as
-# dependencies anywhere else
-#
-#############################################################
-$(DL_DIR) $(TOOLCHAIN_DIR) $(BUILD_DIR) $(HOST_DIR) $(BINARIES_DIR) $(STAMP_DIR):
-	@mkdir -p $@
 
 $(STAGING_DIR):
 	@mkdir -p $(STAGING_DIR)/bin
