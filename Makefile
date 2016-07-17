@@ -556,7 +556,7 @@ HOSTCFLAGS=$(CFLAGS_FOR_BUILD)
 export HOSTCFLAGS
 
 .PHONY: prepare-kconfig
-prepare-kconfig: outputmakefile
+prepare-kconfig: outputmakefile $(BUILD_DIR)/.br2-external.in
 
 $(BUILD_DIR)/buildroot-config/%onf:
 	mkdir -p $(@D)/lxdialog
@@ -567,7 +567,8 @@ COMMON_CONFIG_ENV = \
 	KCONFIG_AUTOHEADER=$(BUILD_DIR)/buildroot-config/autoconf.h \
 	KCONFIG_TRISTATE=$(BUILD_DIR)/buildroot-config/tristate.config \
 	BUILDROOT_CONFIG=$(CONFIG_DIR)/.config \
-	BR2_EXTERNAL=$(BR2_EXTERNAL)
+	BR2_EXTERNAL=$(BR2_EXTERNAL) \
+	BUILD_DIR=$(BUILD_DIR)
 
 xconfig: $(BUILD_DIR)/buildroot-config/qconf prepare-kconfig
 	@mkdir -p $(BUILD_DIR)/buildroot-config
@@ -668,6 +669,13 @@ outputmakefile:
 ifeq ($(NEED_WRAPPER),y)
 	$(Q)$(TOPDIR)/support/scripts/mkmakefile $(TOPDIR) $(O)
 endif
+
+# Even though the target is a real file, we mark it as PHONY as we
+# want it to be re-generated each time make is invoked, in case the
+# value of BR2_EXTERNAL is changed.
+.PHONY: $(BUILD_DIR)/.br2-external.in
+$(BUILD_DIR)/.br2-external.in: $(BUILD_DIR)
+	@touch $@
 
 clean:
 	rm -rf $(STAGING_DIR) $(TARGET_DIR) $(BINARIES_DIR) $(HOST_DIR) \
