@@ -10,10 +10,6 @@ config BR2_VERSION
 	string
 	option env="BR2_VERSION_FULL"
 
-config BR2_EXTERNAL
-	string
-	option env="BR2_EXTERNAL"
-
 config BR2_BUILD_DIR
 	string
 	option env="BUILD_DIR"
@@ -398,12 +394,5 @@ source "fs/Config.in"
 source "boot/Config.in"
 
 source "linux/Config.in"
-
-menu "User-provided options"
-	depends on BR2_EXTERNAL != "support/dummy-external"
-
-source "$BR2_EXTERNAL/Config.in"
-
-endmenu
 
 source "$BR2_BUILD_DIR/.br2-external.in"
