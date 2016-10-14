@@ -675,7 +675,7 @@ endif
 # value of BR2_EXTERNAL is changed.
 .PHONY: $(BUILD_DIR)/.br2-external.in
 $(BUILD_DIR)/.br2-external.in: $(BUILD_DIR)
-	@touch $@
+	$(Q)support/scripts/br2-external -o "$(@)" $(BR2_EXTERNAL)
 
 clean:
 	rm -rf $(STAGING_DIR) $(TARGET_DIR) $(BINARIES_DIR) $(HOST_DIR) \
