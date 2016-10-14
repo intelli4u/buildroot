@@ -59,6 +59,9 @@ comma:=,
 empty:=
 space:=$(empty) $(empty)
 
+# Include some helper macros and variables
+include support/misc/utils.mk
+
 ifneq ("$(origin O)", "command line")
 O:=output
 CONFIG_DIR:=$(TOPDIR)
@@ -309,8 +312,6 @@ CCACHE_CACHE_DIR=$(HOME)/.buildroot-ccache
 HOSTCC  := $(CCACHE) $(HOSTCC)
 HOSTCXX := $(CCACHE) $(HOSTCXX)
 endif
-
-include support/utils/definitions.mk
 
 include toolchain/Makefile.in
 include package/Makefile.in
@@ -643,7 +644,7 @@ define percent_defconfig
 	@$$(COMMON_CONFIG_ENV) BR2_DEFCONFIG=$(1)/configs/$$@ \
 		$$< --defconfig=$(1)/configs/$$@ $$(CONFIG_CONFIG_IN)
 endef
-$(eval $(foreach d,$(TOPDIR) $(BR2_EXTERNAL_DIRS),$(call percent_defconfig,$(d))$(sep)))
+$(eval $(foreach d,$(call reverse,$(TOPDIR) $(BR2_EXTERNAL_DIRS)),$(call percent_defconfig,$(d))$(sep)))
 
 savedefconfig: $(BUILD_DIR)/buildroot-config/conf prepare-kconfig
 	@mkdir -p $(BUILD_DIR)/buildroot-config
@@ -771,7 +772,7 @@ define list-defconfigs
 		[ -f "$${defconfig}" ] || continue; \
 		if $${first}; then \
 			if [ "$(2)" ]; then \
-				printf "External configs in $(2):\n"; \
+				printf 'External configs in "$(call qstrip,$(2))":\n'; \
 			else \
 				printf "Built-in configs:\n"; \
 			fi; \
@@ -788,7 +789,8 @@ endef
 list-defconfigs:
 	$(call list-defconfigs,$(TOPDIR))
 	$(foreach name,$(BR2_EXTERNAL_NAMES),\
-		$(call list-defconfigs,$(BR2_EXTERNAL_$(name)_PATH),$(name))$(sep))
+		$(call list-defconfigs,$(BR2_EXTERNAL_$(name)_PATH),\
+			$(BR2_EXTERNAL_$(name)_DESC))$(sep))
 
 release: OUT=buildroot-$(BR2_VERSION)
 
