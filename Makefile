@@ -93,7 +93,7 @@ BUILD_DIR:=$(BASE_DIR)/build
 # Handling of BR2_EXTERNAL.
 #
 # The value of BR2_EXTERNAL is stored in .br-external in the output directory.
-# The location of the external.mk makefile fragment is computed in that file.
+# The location of the external.mk makefile fragments is computed in that file.
 # On subsequent invocations of make, this file is read in. BR2_EXTERNAL can
 # still be overridden on the command line, therefore the file is re-created
 # every time make is run.
@@ -350,16 +350,15 @@ include boot/common.mk
 include target/Makefile.in
 include linux/linux.mk
 
-# If using a br2-external tree, the BR2_EXTERNAL_$(NAME)_PATH variable
-# is also present in the .config file. Since .config is included after
-# we defined BR2_EXTERNAL_$(NAME)_PATH in the Makefile, the value in
-# that variable is quoted. We just include the generated Makefile fragment
-# .br2-external.mk a third time, which will set that variable to the
-# un-quoted value.
+# If using a br2-external tree, the BR2_EXTERNAL_$(NAME)_PATH variables
+# are also present in the .config file. Since .config is included after
+# we defined them in the Makefile, the values for those variables are
+# quoted. We just include the generated Makefile fragment .br2-external.mk
+# a third time, which will set those variables to the un-quoted values.
 include $(BR2_EXTERNAL_FILE)
 
 # Nothing to include if no BR2_EXTERNAL tree in use
-include $(BR2_EXTERNAL_MK)
+include $(BR2_EXTERNAL_MKS)
 
 TARGETS+=target-finalize
 
@@ -644,7 +643,7 @@ define percent_defconfig
 	@$$(COMMON_CONFIG_ENV) BR2_DEFCONFIG=$(1)/configs/$$@ \
 		$$< --defconfig=$(1)/configs/$$@ $$(CONFIG_CONFIG_IN)
 endef
-$(eval $(foreach d,$(TOPDIR) $(if $(BR2_EXTERNAL_NAME),$(BR2_EXTERNAL_$(BR2_EXTERNAL_NAME)_PATH)),$(call percent_defconfig,$(d))$(sep)))
+$(eval $(foreach d,$(TOPDIR) $(BR2_EXTERNAL_DIRS),$(call percent_defconfig,$(d))$(sep)))
 
 savedefconfig: $(BUILD_DIR)/buildroot-config/conf prepare-kconfig
 	@mkdir -p $(BUILD_DIR)/buildroot-config
@@ -762,6 +761,34 @@ endif
 	@echo
 	@echo 'See docs/README, or generate the Buildroot manual for further details'
 	@echo
+
+# List the defconfig files
+# $(1): base directory
+# $(2): br2-external name, empty for bundled
+define list-defconfigs
+	@first=true; \
+	for defconfig in $(1)/configs/*_defconfig; do \
+		[ -f "$${defconfig}" ] || continue; \
+		if $${first}; then \
+			if [ "$(2)" ]; then \
+				printf "External configs in $(2):\n"; \
+			else \
+				printf "Built-in configs:\n"; \
+			fi; \
+			first=false; \
+		fi; \
+		defconfig="$${defconfig##*/}"; \
+		printf "  %-35s - Build for %s\n" "$${defconfig}" "$${defconfig%_defconfig}"; \
+	done; \
+	$${first} || printf "\n"
+endef
+
+# We iterate over BR2_EXTERNAL_NAMES rather than BR2_EXTERNAL_DIRS,
+# because we want to display the name of the br2-external tree.
+list-defconfigs:
+	$(call list-defconfigs,$(TOPDIR))
+	$(foreach name,$(BR2_EXTERNAL_NAMES),\
+		$(call list-defconfigs,$(BR2_EXTERNAL_$(name)_PATH),$(name))$(sep))
 
 release: OUT=buildroot-$(BR2_VERSION)
 
