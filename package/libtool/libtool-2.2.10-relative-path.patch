@@ -1,0 +1,54 @@
+diff --git a/Makefile.am b/Makefile.am
+index a7de46d..c406f0e 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -132,11 +132,11 @@ edit = sed \
+ 	-e 's,@PACKAGE_VERSION\@,$(VERSION),g' \
+ 	-e 's,@SED\@,$(SED),g' \
+ 	-e 's,@VERSION\@,$(VERSION),g' \
+-	-e 's,@aclocaldir\@,$(aclocaldir),g' \
+-	-e 's,@datadir\@,$(datadir),g' \
+-	-e 's,@pkgdatadir\@,$(pkgdatadir),g' \
+ 	-e 's,@host_triplet\@,$(host_triplet),g' \
+-	-e 's,@prefix\@,$(prefix),g' \
++	-e 's,@prefix\@,$${0%/*},g' \
++	-e 's,@aclocaldir@,$${prefix}/../'`python -c "import os; print os.path.relpath('$(aclocaldir)', '$(prefix)')"`',g' \
++	-e 's,@datadir@,$${prefix}/../'`python -c "import os; print os.path.relpath('$(datadir)', '$(prefix)')"`',g' \
++	-e 's,@pkgdatadir@,$${prefix}/../'`python -c "import os; print os.path.relpath('$(pkgdatadir)', '$(prefix)')"`',g' \
+ 	-e "s,@configure_input\@,Generated from $$input.,g"
+ 
+ sh_files	= $(auxdir)/general.m4sh $(auxdir)/getopt.m4sh
+diff --git a/Makefile.in b/Makefile.in
+index b34d94b..959acb1 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -494,7 +494,10 @@ edit = sed \
+ 	-e 's,@datadir\@,$(datadir),g' \
+ 	-e 's,@pkgdatadir\@,$(pkgdatadir),g' \
+ 	-e 's,@host_triplet\@,$(host_triplet),g' \
+-	-e 's,@prefix\@,$(prefix),g' \
++	-e 's,@prefix\@,$${0%/*},g' \
++	-e 's,@aclocaldir@,$${prefix}/../'`python -c "import os; print os.path.relpath('$(aclocaldir)', '$(prefix)')"`',g' \
++	-e 's,@datadir@,$${prefix}/../'`python -c "import os; print os.path.relpath('$(datadir)', '$(prefix)')"`',g' \
++	-e 's,@pkgdatadir@,$${prefix}/../'`python -c "import os; print os.path.relpath('$(pkgdatadir)', '$(prefix)')"`',g' \
+ 	-e "s,@configure_input\@,Generated from $$input.,g"
+ 
+ sh_files = $(auxdir)/general.m4sh $(auxdir)/getopt.m4sh
+diff --git a/libtoolize.m4sh b/libtoolize.m4sh
+index cfe4aaa..fb6561d 100644
+--- a/libtoolize.m4sh
++++ b/libtoolize.m4sh
+@@ -106,7 +106,12 @@ seen_ltdl=false
+ ltdl_mode=
+ 
+ # Locations for important files:
+-prefix=@prefix@
++prog=$0
++while [ -L $prog ] ; do
++  prog=`ls -l $prog | awk '{ print $11 }'`
++done
++
++prefix=${prog%/*}
+ datadir=@datadir@
+ pkgdatadir=@pkgdatadir@
+ pkgltdldir=@pkgdatadir@
