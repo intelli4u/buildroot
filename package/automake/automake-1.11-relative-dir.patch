@@ -1,0 +1,147 @@
+diff --git a/Makefile.am b/Makefile.am
+index b4d608a..231f770 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -75,7 +75,9 @@ do_subst = sed \
+   -e 's,[@]SHELL[@],$(SHELL),g' \
+   -e 's,[@]VERSION[@],$(VERSION),g' \
+   -e 's,[@]configure_input[@],Generated from $@.in; do not edit by hand.,g' \
+-  -e 's,[@]datadir[@],$(datadir),g'
++  -e 's,[@]datadir[@],$(datadir),g' \
++  -e 's%"@datapdir@%dirname(readlink($$0) || $$0) . "/'`python -c "import os; print os.path.relpath('$(datadir)', '$(bindir)')"`'%g' \
++  -e "s%'@datapdir@%dirname(readlink("'$$0'") || "'$$0'") . '"/`python -c "import os; print os.path.relpath('$(datadir)', '$(bindir)')"`'%g'
+ 
+ ## These files depend on Makefile so they are rebuilt if $(VERSION),
+ ## $(datadir) or other do_subst'ituted variables change.
+diff --git a/Makefile.in b/Makefile.in
+index 2e69a08..0f98b92 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -244,7 +244,9 @@ do_subst = sed \
+   -e 's,[@]SHELL[@],$(SHELL),g' \
+   -e 's,[@]VERSION[@],$(VERSION),g' \
+   -e 's,[@]configure_input[@],Generated from $@.in; do not edit by hand.,g' \
+-  -e 's,[@]datadir[@],$(datadir),g'
++  -e 's,[@]datadir[@],$(datadir),g' \
++  -e 's%"@datapdir@%dirname(readlink($$0) || $$0) . "/'`python -c "import os; print os.path.relpath('$(datadir)', '$(bindir)')"`'%g' \
++  -e "s%'@datapdir@%dirname(readlink("'$$0'") || "'$$0'") . '"/`python -c "import os; print os.path.relpath('$(datadir)', '$(bindir)')"`'%g'
+ 
+ 
+ # Some simple checks, and then ordinary check.  These are only really
+diff --git a/aclocal.in b/aclocal.in
+index a5cee39..3fae860 100644
+--- a/aclocal.in
++++ b/aclocal.in
+@@ -28,7 +28,8 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
+ 
+ BEGIN
+ {
+-  my $perllibdir = $ENV{'perllibdir'} || '@datadir@/@PACKAGE@-@APIVERSION@';
++  use File::Basename;
++  my $perllibdir = $ENV{'perllibdir'} || '@datapdir@/@PACKAGE@-@APIVERSION@';
+   unshift @INC, (split '@PATH_SEPARATOR@', $perllibdir);
+ }
+ 
+@@ -57,8 +58,8 @@ $perl_threads = 0;
+ # @system_includes can be augmented with the `dirlist' file.  Also
+ # --acdir will reset both @automake_includes and @system_includes.
+ my @user_includes = ();
+-my @automake_includes = ("@datadir@/aclocal-$APIVERSION");
+-my @system_includes = ('@datadir@/aclocal');
++my @automake_includes = ("@datapdir@/aclocal-$APIVERSION");
++my @system_includes = ('@datapdir@/aclocal');
+ 
+ # Whether we should copy M4 file in $user_includes[0].
+ my $install = 0;
+diff --git a/automake.in b/automake.in
+index e934c5f..783e60a 100755
+--- a/automake.in
++++ b/automake.in
+@@ -31,7 +31,8 @@ package Language;
+ 
+ BEGIN
+ {
+-  my $perllibdir = $ENV{'perllibdir'} || '@datadir@/@PACKAGE@-@APIVERSION@';
++  use File::Basename;
++  my $perllibdir = $ENV{'perllibdir'} || '@datapdir@/@PACKAGE@-@APIVERSION@';
+   unshift @INC, (split '@PATH_SEPARATOR@', $perllibdir);
+ 
+   # Override SHELL.  This is required on DJGPP so that system() uses
+diff --git a/bootstrap b/bootstrap
+index 2a86345..254f9f2 100755
+--- a/bootstrap
++++ b/bootstrap
+@@ -1,4 +1,4 @@
+-#! /bin/sh
++#! /bin/sh -x
+ 
+ # This script helps bootstrap automake, when checked out from git.
+ #
+@@ -55,6 +55,7 @@ fi
+ # Variables to substitute
+ VERSION=`sed -ne '/AC_INIT/s/^[^[]*\[[^[]*\[\([^]]*\)\].*$/\1/p' configure.ac`
+ PACKAGE=automake
++bindir=.
+ datadir=.
+ PERL_THREADS=0
+ 
+@@ -105,6 +106,8 @@ dosubst ()
+       -e "s%@SHELL@%$BOOTSTRAP_SHELL%g" \
+       -e "s%@VERSION@%$VERSION%g" \
+       -e "s%@datadir@%$datadir%g" \
++      -e 's%"@datapdir@%dirname($$0) . "'/`python -c "import os; print os.path.relpath('$datadir', '$bindir')"`'%g' \
++      -e "s%'@datapdir@%dirname("'$$0'") . '"/`python -c "import os; print os.path.relpath('$datadir', '$bindir')"`'%g' \
+       -e "s%@configure_input@%Generated from $in; do not edit by hand.%g" \
+       $1 > $2
+   chmod a-w $2
+diff --git a/lib/Automake/Config.in b/lib/Automake/Config.in
+index 29a184f..55819a9 100644
+--- a/lib/Automake/Config.in
++++ b/lib/Automake/Config.in
+@@ -18,6 +18,7 @@ package Automake::Config;
+ use strict;
+ 
+ use 5.006;
++use File::Basename;
+ require Exporter;
+ 
+ our @ISA = qw (Exporter);
+@@ -28,7 +29,7 @@ our @EXPORT = qw ($APIVERSION $PACKAGE $VERSION $libdir $perl_threads);
+ our $APIVERSION = '@APIVERSION@';
+ our $PACKAGE = '@PACKAGE@';
+ our $VERSION = '@VERSION@';
+-our $libdir = '@datadir@/@PACKAGE@-@APIVERSION@';
++our $libdir = '@datapdir@/@PACKAGE@-@APIVERSION@';
+ our $perl_threads = @PERL_THREADS@;
+ 
+ 1;;
+diff --git a/lib/Automake/Makefile.am b/lib/Automake/Makefile.am
+index 173b18e..723a592 100644
+--- a/lib/Automake/Makefile.am
++++ b/lib/Automake/Makefile.am
+@@ -56,7 +56,9 @@ do_subst = in=`echo $@ | sed 's/\.[^.]*$$//'`; sed \
+   -e 's,[@]SHELL[@],$(SHELL),g' \
+   -e 's,[@]VERSION[@],$(VERSION),g' \
+   -e "s,[@]configure_input[@],Generated from $$in.in; do not edit by hand.,g" \
+-  -e 's,[@]datadir[@],$(datadir),g'
++  -e 's,[@]datadir[@],$(datadir),g' \
++  -e 's%"@datapdir@%dirname(readlink($$0) || $$0) . "/'`python -c "import os; print os.path.relpath('$(datadir)', '$(bindir)')"`'%g' \
++  -e "s%'@datapdir@%dirname(readlink("'$$0'") || "'$$0'") . '"/`python -c "import os; print os.path.relpath('$(datadir)', '$(bindir)')"`'%g'
+ 
+ ## This file depends on Makefile so it is rebuilt if $(VERSION),
+ ## $(datadir) or other do_subst'ituted variables change.
+diff --git a/lib/Automake/Makefile.in b/lib/Automake/Makefile.in
+index fcd6adc..789a32d 100644
+--- a/lib/Automake/Makefile.in
++++ b/lib/Automake/Makefile.in
+@@ -243,7 +243,9 @@ do_subst = in=`echo $@ | sed 's/\.[^.]*$$//'`; sed \
+   -e 's,[@]SHELL[@],$(SHELL),g' \
+   -e 's,[@]VERSION[@],$(VERSION),g' \
+   -e "s,[@]configure_input[@],Generated from $$in.in; do not edit by hand.,g" \
+-  -e 's,[@]datadir[@],$(datadir),g'
++  -e 's,[@]datadir[@],$(datadir),g' \
++  -e 's%"@datapdir@%dirname(readlink($$0) || $$0) . "/'`python -c "import os; print os.path.relpath('$(datadir)', '$(bindir)')"`'%g' \
++  -e "s%'@datapdir@%dirname(readlink("'$$0'") || "'$$0'") . '"/`python -c "import os; print os.path.relpath('$(datadir)', '$(bindir)')"`'%g'
+ 
+ EXTRA_DIST = Config.in
+ all: all-recursive
