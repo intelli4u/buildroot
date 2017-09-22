@@ -100,6 +100,76 @@ static char *conf_expand_value(const char *in)
 	return res_value;
 }
 
+static char *conf_expand_env_value(const char *in)
+{
+	int escape;
+	char brace;
+	const char *src;
+	static char res_value[SYMBOL_MAXLENGTH];
+	char *dst, *env, name[SYMBOL_MAXLENGTH];
+
+	res_value[0] = 0;
+	while ((src = strchr(in, '$'))) {
+		if (escape = (src != in && *(src - 1) == '\\'))
+			src++;
+
+		strncat(res_value, in, src - in);
+		if (escape) {
+			in = src;
+			continue;
+		}
+
+		in = src++;
+		if (*src == '(' || *src == '{') {
+			brace = *src == '(' ? ')' : '}';
+			src++;
+		} else {
+			brace = 0;
+		}
+
+		dst = name;
+		while (isalnum(*src) || *src == '_')
+			*dst++ = *src++;
+		*dst = 0;
+
+		env = getenv(name);
+		if (brace) {
+			if ((env == NULL || *env == 0x00) && *src == ':') {
+				src++;
+				if (*src == '-') {
+					src++;
+					dst = name;
+					while (*src && *src != ')')
+						*dst++ = *src++;
+					*dst = 0;
+
+					env = dst = name;
+					if (*dst++ == '$') {
+						env = getenv(dst);
+						if (!env) env = name;
+					}
+				}
+			}
+
+			while (*src && *src != brace)
+				src++;
+
+			src++;
+		}
+
+		if (env) {
+			strcat(res_value, env);
+		} else {
+			strncat(res_value, in, src - in);
+		}
+
+		in = src;
+	}
+	strcat(res_value, in);
+
+	return res_value;
+}
+
 char *conf_get_default_confname(void)
 {
 	struct stat buf;
@@ -461,7 +531,7 @@ static void conf_write_symbol(struct symbol *sym, FILE *out, bool write_no)
 		}
 		break;
 	case S_STRING:
-		conf_write_string(false, sym->name, sym_get_string_value(sym), out);
+		conf_write_string(false, sym->name, conf_expand_env_value(sym_get_string_value(sym)), out);
 		break;
 	case S_HEX:
 	case S_INT:
