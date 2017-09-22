@@ -1,0 +1,17 @@
+diff --git trunk/extra/locale/Makefile.in trunk/extra/locale/Makefile.in
+index 221a515..eed5c47 100644
+--- trunk/extra/locale/Makefile.in
++++ trunk/extra/locale/Makefile.in
+@@ -143,6 +143,11 @@ endif
+ 
+ endif
+ 
++# Enlarge the default stack size
++EXCLUDED_LIST=CYGWIN_NT Windows
++ifneq ($(EXCLUDED_LIST),$(filter-out $(firstword $(subst -, ,$(shell uname))), $(EXCLUDED_LIST)))
++BUILD_LDFLAGS-locale=-Wl,--stack=0x1000000
++endif
+ $(locale_DIR)/gen_collate.c: $(DEPH-gen_collate)
+ $(locale_OUT)/gen_collate : $(locale_DIR)/gen_collate.c
+ 	$(hcompile.u)
+
