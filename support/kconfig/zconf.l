@@ -265,7 +265,8 @@ static void zconf_endhelp(void)
  */
 FILE *zconf_fopen(const char *name)
 {
-	char *env, fullname[PATH_MAX+1];
+	char *slash, *last;
+	char *env, curname[PATH_MAX+1], fullname[PATH_MAX+1];
 	FILE *f;
 
 	f = fopen(name, "r");
@@ -273,7 +274,23 @@ FILE *zconf_fopen(const char *name)
 		env = getenv(SRCTREE);
 		if (env) {
 			sprintf(fullname, "%s/%s", env, name);
-			f = fopen(fullname, "r");
+		} else {
+			strcpy(curname, zconf_curname());
+			slash = curname;
+			do {
+				last = slash;
+				slash = strchr(last +  1, '/');
+			} while (slash != NULL);
+
+			if (*last == '/') *last = 0;
+			sprintf(fullname, "%s/%s", curname, name);
+		}
+		f = fopen(fullname, "r");
+		if (f != NULL) {
+			struct file *this_file = file_lookup(name);
+			if (this_file != NULL) {
+				strcpy(this_file->fullname, fullname);
+			}
 		}
 	}
 	return f;
@@ -359,5 +376,6 @@ int zconf_lineno(void)
 
 const char *zconf_curname(void)
 {
-	return current_pos.file ? current_pos.file->name : "<none>";
+	return current_pos.filename[0] ? current_pos.file->fullname : (
+		current_pos.name ? current_pos.name : "<none>");
 }
