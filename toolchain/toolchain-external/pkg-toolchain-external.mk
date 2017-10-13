@@ -256,7 +256,7 @@ endif
 # *-ranlib and *-nm.
 define TOOLCHAIN_EXTERNAL_INSTALL_WRAPPER
 	$(Q)cd $(HOST_DIR)/bin; \
-	for i in $(TOOLCHAIN_EXTERNAL_CROSS)*; do \
+	for i in $(TOOLCHAIN_EXTERNAL_BIN)/*; do \
 		base=$${i##*/}; \
 		case "$$base" in \
 		*-ar|*-ranlib|*-nm) \
@@ -456,11 +456,13 @@ endef
 create_lib_symlinks = \
 	$(Q)DESTDIR="$(strip $1)" ; \
 	ARCH_LIB_DIR="$(call toolchain_find_libdir,$(TOOLCHAIN_EXTERNAL_CC) $(TOOLCHAIN_EXTERNAL_CFLAGS))" ; \
-	if [ ! -e "$${DESTDIR}/$${ARCH_LIB_DIR}" -a ! -e "$${DESTDIR}/usr/$${ARCH_LIB_DIR}" ]; then \
-		relpath="$(call relpath_prefix,$${ARCH_LIB_DIR})" ; \
-		ln -snf $${relpath}lib "$${DESTDIR}/$${ARCH_LIB_DIR}" ; \
-		ln -snf $${relpath}lib "$${DESTDIR}/usr/$${ARCH_LIB_DIR}" ; \
-	fi
+	relpath="$(call relpath_prefix,$${ARCH_LIB_DIR})" ; \
+	if [ ! -e "$${DESTDIR}/$${ARCH_LIB_DIR}" ] && [ "$${ARCH_LIB_DIR}" != "lib" ]; then \
+		mkdir -p "$${DESTDIR}" && ln -snf $${relpath}lib "$${DESTDIR}/$${ARCH_LIB_DIR}" ; \
+	fi; \
+	if [ ! -e "$${DESTDIR}/usr/$${ARCH_LIB_DIR}" ] && [ "$${ARCH_LIB_DIR}" != "lib" ]; then \
+		mkdir -p "$${DESTDIR}/usr" && ln -snf $${relpath}lib "$${DESTDIR}/usr/$${ARCH_LIB_DIR}" ; \
+	fi;
 
 define TOOLCHAIN_EXTERNAL_CREATE_STAGING_LIB_SYMLINK
 	$(call create_lib_symlinks,$(STAGING_DIR))
