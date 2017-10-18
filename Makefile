@@ -496,6 +496,12 @@ ifneq ($(PACKAGE_OVERRIDE_FILE),)
 -include $(PACKAGE_OVERRIDE_FILE)
 endif
 
+# Include the file for global exported variables
+GLOBAL_VARIABLE_FILE = $(call qstrip,$(BR2_GLOBAL_VARIABLE_FILE))
+ifneq ($(GLOBAL_VARIABLE_FILE),)
+-include $(GLOBAL_VARIABLE_FILE)
+endif
+
 include $(sort $(wildcard package/*/*.mk))
 
 include boot/common.mk

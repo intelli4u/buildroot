@@ -203,6 +203,13 @@ config BR2_DL_DIR
 
 	  The default is $(TOPDIR)/dl
 
+config BR2_GLOBAL_EXPORT_VAR
+	string "Global exported variables"
+	help
+	  Global exported variables used by other Makefiles, which can support
+	  to integrate the environmental dependent constants during the
+	  compilation.
+
 config BR2_HOST_DIR
 	string "Host dir"
 	default "$(BASE_DIR)/host"
@@ -669,6 +676,13 @@ config BR2_PACKAGE_OVERRIDE_FILE
 	  allows to tell Buildroot to use an existing directory as the
 	  source directory for a particular package. See the Buildroot
 	  documentation for more details on this feature.
+
+config BR2_EXPORT_FILE
+	string "location of the file to store global exported variables"
+	default "$(CONFIG_DIR)/exports.mk"
+	help
+	 A file contains the global variables, which could be used by
+	 other Makefiles as the defined constants.
 
 config BR2_GLOBAL_PATCH_DIR
 	string "global patch directories"
