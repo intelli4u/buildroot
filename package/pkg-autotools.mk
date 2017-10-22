@@ -299,7 +299,16 @@ endif
 ifneq ($$($(2)_LIBTOOL_PATCH),NO)
 $(2)_PRE_CONFIGURE_HOOKS += LIBTOOL_PATCH_HOOK
 endif
-$(2)_DEPENDENCIES += host-automake host-autoconf host-libtool
+# If autotool existed, don't add the dependencies automatically
+ifeq ($(wildcard $(HOST_DIR)/bin/automake $(TOOLCHAIN_EXTERNAL_BIN)/automake),)
+$(2)_DEPENDENCIES += host-automake
+endif
+ifeq ($(wildcard $(HOST_DIR)/bin/autoconf $(TOOLCHAIN_EXTERNAL_BIN)/autoconf),)
+$(2)_DEPENDENCIES += host-autoconf
+endif
+ifeq ($(wildcard $(HOST_DIR)/bin/libtool $(TOOLCHAIN_EXTERNAL_BIN)/libtool),)
+$(2)_DEPENDENCIES += host-libtool
+endif
 
 else # ! AUTORECONF = YES
 

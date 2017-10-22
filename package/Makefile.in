@@ -417,6 +417,16 @@ ifeq ($(BR2_COMPILER_PARANOID_UNSAFE_PATH),y)
 export BR_COMPILER_PARANOID_UNSAFE_PATH=enabled
 endif
 
+.PHONY: host-bison host-flex host-pkgconf host-intltool host-automake host-autoconf host-libtool host-m4
+host-bison:
+host-flex:
+host-pkgconf:
+host-intltool:
+host-automake:
+host-autoconf:
+host-libtool:
+host-m4:
+
 include package/pkg-download.mk
 include package/pkg-autotools.mk
 include package/pkg-cmake.mk
