@@ -103,6 +103,14 @@ define AUTORECONF_HOOK
 	$(Q)cd $($(PKG)_SRCDIR) && $($(PKG)_AUTORECONF_ENV) $(AUTORECONF) $($(PKG)_AUTORECONF_OPTS)
 endef
 
+#
+# Hook to automake the package if needed
+#
+define AUTOMAKE_HOOK
+	@$(call MESSAGE,"Automaking")
+	$(Q)cd $($(PKG)_SRCDIR) && $($(PKG)_AUTOMAKE_ENV) $(AUTOMAKE) $(if $($(PKG)_AUTOMAKE_OPTS),$($(PKG)_AUTOMAKE_OPTS),--add-missing) || true
+endef
+
 ################################################################################
 # inner-autotools-package -- defines how the configuration, compilation and
 # installation of an autotools package should be done, implements a
@@ -141,6 +149,14 @@ ifndef $(2)_AUTORECONF
   $(2)_AUTORECONF = $$($(3)_AUTORECONF)
  else
   $(2)_AUTORECONF ?= NO
+ endif
+endif
+
+ifndef $(2)_AUTOMAKE
+ ifdef $(3)_AUTOMAKE
+  $(2)_AUTOMAKE = $$($(3)_AUTOMAKE)
+ else
+  $(2)_AUTOMAKE ?= NO
  endif
 endif
 
@@ -249,6 +265,9 @@ $(2)_PRE_CONFIGURE_HOOKS += GETTEXTIZE_HOOK
 $(2)_DEPENDENCIES += host-gettext
 endif
 $(2)_PRE_CONFIGURE_HOOKS += AUTORECONF_HOOK
+ifeq ($$($(2)_AUTOMAKE),YES)
+$(2)_PRE_CONFIGURE_HOOKS += AUTOMAKE_HOOK
+endif
 # default values are not evaluated yet, so don't rely on this defaulting to YES
 ifneq ($$($(2)_LIBTOOL_PATCH),NO)
 $(2)_PRE_CONFIGURE_HOOKS += LIBTOOL_PATCH_HOOK
