@@ -55,40 +55,50 @@ PASSWD_METHOD="$( sed -r -e '/^BR2_TARGET_GENERIC_PASSWD_METHOD="(.*)"$/!d;'    
 get_uid() {
     local username="${1}"
 
-    awk -F: -v username="${username}"                           \
-        '$1 == username { printf( "%d\n", $3 ); }' "${PASSWD}"
+    if [ -e "${PASSWD}" ] ; then
+        awk -F: -v username="${username}"                           \
+            '$1 == username { printf( "%d\n", $3 ); }' "${PASSWD}"
+    fi
 }
 
 #----------------------------------------------------------------------------
 get_ugid() {
     local username="${1}"
 
-    awk -F: -v username="${username}"                          \
-        '$1 == username { printf( "%d\n", $4 ); }' "${PASSWD}"
+    if [ -e "${PASSWD}" ] ; then
+        awk -F: -v username="${username}"                          \
+            '$1 == username { printf( "%d\n", $4 ); }' "${PASSWD}"
+    fi
 }
 
 #----------------------------------------------------------------------------
 get_gid() {
     local group="${1}"
 
-    awk -F: -v group="${group}"                             \
-        '$1 == group { printf( "%d\n", $3 ); }' "${GROUP}"
+    if [ -e "${GROUP}" ] ; then
+        awk -F: -v group="${group}"                             \
+            '$1 == group { printf( "%d\n", $3 ); }' "${GROUP}"
+    fi
 }
 
 #----------------------------------------------------------------------------
 get_username() {
     local uid="${1}"
 
-    awk -F: -v uid="${uid}"                                 \
-        '$3 == uid { printf( "%s\n", $1 ); }' "${PASSWD}"
+    if [ -e "${PASSWD}" ] ; then
+        awk -F: -v uid="${uid}"                                 \
+            '$3 == uid { printf( "%s\n", $1 ); }' "${PASSWD}"
+    fi
 }
 
 #----------------------------------------------------------------------------
 get_group() {
     local gid="${1}"
 
-    awk -F: -v gid="${gid}"                             \
-        '$3 == gid { printf( "%s\n", $1 ); }' "${GROUP}"
+    if [ -e "${GROUP}" ] ; then
+        awk -F: -v gid="${gid}"                             \
+            '$3 == gid { printf( "%s\n", $1 ); }' "${GROUP}"
+    fi
 }
 
 #----------------------------------------------------------------------------
@@ -219,8 +229,10 @@ add_one_group() {
     fi
 
     # Remove any previous instance of this group, and re-add the new one
-    sed -i --follow-symlinks -e '/^'"${group}"':.*/d;' "${GROUP}"
-    printf "%s:x:%d:\n" "${group}" "${gid}" >>"${GROUP}"
+    if [ -e "${GROUP}" ] ; then
+        sed -i --follow-symlinks -e '/^'"${group}"':.*/d;' "${GROUP}"
+        printf "%s:x:%d:\n" "${group}" "${gid}" >>"${GROUP}"
+    fi
 
     # Ditto for /etc/gshadow if it exists
     if [ -f "${GSHADOW}" ]; then
@@ -304,6 +316,7 @@ add_one_user() {
 
     # Remove any previous instance of this user
     for _f in "${PASSWD}" "${SHADOW}"; do
+        [ -f "${_f}" ] || continue
         sed -r -i --follow-symlinks -e '/^'"${username}"':.*/d;' "${_f}"
     done
 
