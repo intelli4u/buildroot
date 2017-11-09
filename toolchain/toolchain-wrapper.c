@@ -90,9 +90,11 @@ static char *predef_args[] = {
  *  - str must be a \0-terminated string
  *  - len does not account for the terminating '\0'
  */
-struct str_len_s {
+struct str_len_va_s {
 	const char *str;
 	size_t     len;
+	const char *macro;
+	int        suppressed;
 };
 
 /* Define a {string,length} tuple. Takes an unquoted constant string as
@@ -100,16 +102,17 @@ struct str_len_s {
  * but we don't want to count it.
  */
 #define STR_LEN(s) { #s, sizeof(#s)-1 }
+#define STR_LEN_MACRO(s, m) { #s, sizeof(#s)-1, #m }
 
 /* List of paths considered unsafe for cross-compilation.
  *
  * An unsafe path is one that points to a directory with libraries or
  * headers for the build machine, which are not suitable for the target.
  */
-static const struct str_len_s unsafe_paths[] = {
+static struct str_len_va_s unsafe_paths[] = {
 	STR_LEN(/lib),
-	STR_LEN(/usr/include),
-	STR_LEN(/usr/lib),
+	STR_LEN_MACRO(/usr/include, BR_ALLOW_USR_DIR),
+	STR_LEN_MACRO(/usr/lib, BR_ALLOW_USR_DIR),
 	STR_LEN(/usr/local/include),
 	STR_LEN(/usr/local/lib),
 	{ NULL, 0 },
@@ -118,7 +121,7 @@ static const struct str_len_s unsafe_paths[] = {
 /* Unsafe options are options that specify a potentialy unsafe path,
  * that will be checked by check_unsafe_path(), below.
  */
-static const struct str_len_s unsafe_opts[] = {
+static const struct str_len_va_s unsafe_opts[] = {
 	STR_LEN(-I),
 	STR_LEN(-idirafter),
 	STR_LEN(-iquote),
@@ -143,11 +146,22 @@ static void check_unsafe_path(const char *arg,
 			      int paranoid,
 			      int arg_has_path)
 {
-	const struct str_len_s *p;
+	struct str_len_va_s *p;
 
 	for (p=unsafe_paths; p->str; p++) {
 		if (strncmp(path, p->str, p->len))
 			continue;
+		else if (p->suppressed == 1)
+			continue;
+		else if (p->suppressed == 0 && p->macro) {
+			const char *v = getenv(p->macro);
+			if (v && *v == 'y' && *(v + 1) == 0x00) {
+				p->suppressed = 1;
+				continue;
+			} else {
+				p->suppressed = -1;
+			}
+		}
 		fprintf(stderr,
 			"%s: %s: unsafe header/library path used in cross-compilation: '%s%s%s'\n",
 			program_invocation_short_name,
@@ -297,7 +311,7 @@ int main(int argc, char **argv)
 
 	/* Check for unsafe library and header paths */
 	for (i = 1; i < argc; i++) {
-		const struct str_len_s *opt;
+		const struct str_len_va_s *opt;
 		for (opt=unsafe_opts; opt->str; opt++ ) {
 			/* Skip any non-unsafe option. */
 			if (strncmp(argv[i], opt->str, opt->len))
