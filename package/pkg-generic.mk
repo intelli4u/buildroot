@@ -216,6 +216,7 @@ $(foreach dir,$(call qstrip,$(BR2_GLOBAL_PATCH_DIR)),\
 $(BUILD_DIR)/%/.stamp_configured:
 	@$(call step_start,configure)
 	@$(call MESSAGE,"Configuring")
+	$(Q)mkdir -p $(@D)
 	$(foreach hook,$($(PKG)_PRE_CONFIGURE_HOOKS),$(call $(hook))$(sep))
 	$($(PKG)_CONFIGURE_CMDS)
 	$(foreach hook,$($(PKG)_POST_CONFIGURE_HOOKS),$(call $(hook))$(sep))
@@ -428,8 +429,12 @@ else
 endif
 $(2)_VERSION := $$(call sanitize,$$($(2)_DL_VERSION))
 
+ifdef $(3)_OVERRIDE2_SRCDIR
+  $(2)_OVERRIDE2_SRCDIR ?= $$($(3)_OVERRIDE2_SRCDIR)
+else
 ifdef $(3)_OVERRIDE_SRCDIR
   $(2)_OVERRIDE_SRCDIR ?= $$($(3)_OVERRIDE_SRCDIR)
+endif
 endif
 
 $(2)_BASE_NAME	= $$(if $$($(2)_VERSION),$(1)-$$($(2)_VERSION),$(1))
@@ -456,7 +461,7 @@ endif
 $(2)_SRCDIR		       = $$($(2)_DIR)/$$($(2)_SUBDIR)
 $(2)_BUILDDIR		       ?= $$($(2)_SRCDIR)
 
-ifneq ($$($(2)_OVERRIDE_SRCDIR),)
+ifneq ($$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR),)
 $(2)_VERSION = custom
 endif
 
@@ -667,7 +672,7 @@ ifeq ($$(filter $(1),$$(DEPENDENCIES_HOST_PREREQ)),)
 $$($(2)_TARGET_SOURCE) $$($(2)_TARGET_RSYNC): | dependencies
 endif
 
-ifeq ($$($(2)_OVERRIDE_SRCDIR),)
+ifeq ($$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR),)
 # In the normal case (no package override), the sequence of steps is
 #  source, by downloading
 #  depends
@@ -715,23 +720,27 @@ else
 
 # Use an order-only dependency so the "<pkg>-clean-for-rebuild" rule
 # can remove the stamp file without triggering the configure step.
+ifeq ($$($(2)_OVERRIDE2_SRCDIR),)
 $$($(2)_TARGET_CONFIGURE): | $$($(2)_TARGET_RSYNC)
+endif
 
 $(1)-depends:		$$($(2)_FINAL_DEPENDENCIES)
 
 $(1)-patch:		$(1)-rsync
 $(1)-extract:		$(1)-rsync
 
+ifeq ($$($(2)_OVERRIDE2_SRCDIR),)
 $(1)-rsync:		$$($(2)_TARGET_RSYNC)
+endif
 
 $(1)-source:
 $(1)-legal-source:
 
 $(1)-source-check:
-	test -d $$($(2)_OVERRIDE_SRCDIR)
+	test -d $$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR)
 
 $(1)-external-deps:
-	@echo "file://$$($(2)_OVERRIDE_SRCDIR)"
+	@echo "file://$$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR)"
 endif
 
 $(1)-show-version:
@@ -795,7 +804,7 @@ $$($(2)_TARGET_INSTALL_IMAGES):		PKG=$(2)
 $$($(2)_TARGET_INSTALL_HOST):		PKG=$(2)
 $$($(2)_TARGET_BUILD):			PKG=$(2)
 $$($(2)_TARGET_CONFIGURE):		PKG=$(2)
-$$($(2)_TARGET_RSYNC):			SRCDIR=$$($(2)_OVERRIDE_SRCDIR)
+$$($(2)_TARGET_RSYNC):			SRCDIR=$$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR)
 $$($(2)_TARGET_RSYNC):			PKG=$(2)
 $$($(2)_TARGET_PATCH):			PKG=$(2)
 $$($(2)_TARGET_PATCH):			RAWNAME=$$(patsubst host-%,%,$(1))
@@ -833,7 +842,7 @@ $(1)-legal-info: $(1)-patch
 # We only save the sources of packages we want to redistribute, that are
 # non-overriden (local or true override).
 ifeq ($$($(2)_REDISTRIBUTE),YES)
-ifeq ($$($(2)_OVERRIDE_SRCDIR),)
+ifeq ($$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR),)
 # Packages that have a tarball need it downloaded beforehand
 $(1)-legal-info: $(1)-source $$(REDIST_SOURCES_DIR_$$(call UPPERCASE,$(4)))
 endif
@@ -863,7 +872,7 @@ ifeq ($$($(2)_SITE_METHOD),local)
 # Packages without a tarball: don't save and warn
 	@$$(call legal-warning-nosource,$$($(2)_RAWNAME),local)
 
-else ifneq ($$($(2)_OVERRIDE_SRCDIR),)
+else ifneq ($$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR),)
 	@$$(call legal-warning-nosource,$$($(2)_RAWNAME),override)
 
 else

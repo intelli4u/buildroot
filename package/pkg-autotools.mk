@@ -222,7 +222,7 @@ define $(2)_CONFIGURE_CMDS
 	$$(TARGET_CONFIGURE_ARGS) \
 	$$($$(PKG)_CONF_ENV) \
 	CONFIG_SITE=/dev/null \
-	./configure \
+	$(if $($(2)_OVERRIDE2_SRCDIR),$(call qstrip,$($(2)_OVERRIDE2_SRCDIR)),.)/configure \
 		--target=$$(GNU_TARGET_NAME) \
 		--host=$$(GNU_TARGET_NAME) \
 		--build=$$(GNU_HOST_NAME) \
@@ -258,7 +258,7 @@ define $(2)_CONFIGURE_CMDS
 	LDFLAGS="$$(HOST_LDFLAGS)" \
 	$$($$(PKG)_CONF_ENV) \
 	CONFIG_SITE=/dev/null \
-	./configure \
+	$(if $($(2)_OVERRIDE2_SRCDIR),$(call qstrip,$($(2)_OVERRIDE2_SRCDIR)),.)/configure \
 		--prefix="$$(HOST_DIR)" \
 		--sysconfdir="$$(HOST_DIR)/etc" \
 		--localstatedir="$$(HOST_DIR)/var" \

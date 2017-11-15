@@ -58,8 +58,13 @@ $$($(2)_KCONFIG_FILE) $$($(2)_KCONFIG_FRAGMENT_FILES): | $(1)-patch
 		fi; \
 	done
 
+ifeq ($$($(2)_OVERRIDE2_SRCDIR),)
 $(2)_KCONFIG_MAKE = \
 	$$($(2)_MAKE_ENV) $$(MAKE) -C $$($(2)_DIR) $$($(2)_KCONFIG_OPTS)
+else
+$(2)_KCONFIG_MAKE = \
+	$$($(2)_MAKE_ENV) $$(MAKE) -C $$($(2)_OVERRIDE2_SRCDIR) O=$$($(2)_DIR) $$($(2)_KCONFIG_OPTS)
+endif
 
 # $(2)_KCONFIG_MAKE may already rely on shell expansion. As the $() syntax
 # of the shell conflicts with Make's own syntax, this means that backticks
@@ -169,7 +174,7 @@ $(2)_CONFIGURATOR_MAKE_ENV = \
 #
 $$(addprefix $(1)-,$$($(2)_KCONFIG_EDITORS)): $(1)-%: $$($(2)_DIR)/.kconfig_editor_%
 $$($(2)_DIR)/.kconfig_editor_%: $$($(2)_DIR)/.stamp_kconfig_fixup_done
-	$$($(2)_CONFIGURATOR_MAKE_ENV) $$(MAKE) -C $$($(2)_DIR) \
+	$$($(2)_CONFIGURATOR_MAKE_ENV) $$(MAKE) $(if $$($(2)_OVERRIDE2_SRCDIR), -C $$($(2)_OVERRIDE2_SRCDIR) O=$$($(2)_DIR), -C $$($(2)_DIR)) \
 		$$($(2)_KCONFIG_OPTS) $$(*)
 	rm -f $$($(2)_DIR)/.stamp_{kconfig_fixup_done,configured,built}
 	rm -f $$($(2)_DIR)/.stamp_{target,staging,images}_installed
@@ -198,7 +203,7 @@ $(1)-check-configuration-done:
 	fi
 
 $(1)-savedefconfig: $(1)-check-configuration-done
-	$$($(2)_MAKE_ENV) $$(MAKE) -C $$($(2)_DIR) \
+	$$($(2)_MAKE_ENV) $$(MAKE) $(if $$($(2)_OVERRIDE2_SRCDIR), -C $$($(2)_OVERRIDE2_SRCDIR) O=$$($(2)_DIR), -C $$($(2)_DIR)) \
 		$$($(2)_KCONFIG_OPTS) savedefconfig
 
 # Target to copy back the configuration to the source configuration file

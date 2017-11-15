@@ -203,6 +203,26 @@ config BR2_DL_DIR
 
 	  The default is $(TOPDIR)/dl
 
+config BR2_OVERRIDE_DIRS
+	string "Source dirs"
+	help
+	  Directories to store all the source packages that we need to build.
+	  If the Linux shell environment has defined the BR2_OVERRIDE_DIRS
+	  environment variable, then this overrides this configuration
+	  item.
+
+	  Spaces are treated as the delimiter of the directoriees. It can have
+	  an alternative prefix to substitute the package name with the format
+	  package:source-dir if the package has another name rather than the
+	  directory basename.
+
+config BR2_OVERRIDE2_DIRS
+	string "Source dirs"
+	help
+	  Directories to store all the source packages that we need to build.
+	  Like BR2_OVERRIDE_DIRS, it defines the directories for compilation and
+	  won't be synchronized to the target directory to duplicate the source.
+
 config BR2_GLOBAL_EXPORT_VAR
 	string "Global exported variables"
 	help
