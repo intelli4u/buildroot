@@ -110,7 +110,7 @@ struct str_len_va_s {
  * headers for the build machine, which are not suitable for the target.
  */
 static struct str_len_va_s unsafe_paths[] = {
-	STR_LEN(/lib),
+	STR_LEN_MACRO(/lib, BR_ALLOW_USR_DIR),
 	STR_LEN_MACRO(/usr/include, BR_ALLOW_USR_DIR),
 	STR_LEN_MACRO(/usr/lib, BR_ALLOW_USR_DIR),
 	STR_LEN(/usr/local/include),
