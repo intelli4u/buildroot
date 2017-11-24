@@ -12,7 +12,6 @@ extern "C" {
 
 #include <assert.h>
 #include <stdio.h>
-#include <limits.h>
 #include "list.h"
 #ifndef __cplusplus
 #include <stdbool.h>
@@ -22,7 +21,6 @@ struct file {
 	struct file *next;
 	struct file *parent;
 	const char *name;
-    char fullname[PATH_MAX+1];
 	int lineno;
 };
 
