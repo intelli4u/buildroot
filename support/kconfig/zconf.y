@@ -10,8 +10,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
+#include <limits.h>
 
 #include "lkc.h"
+#include "util.c"
 
 #define printd(mask, fmt...) if (cdebug & (mask)) printf(fmt)
 
@@ -381,7 +384,9 @@ menu_block:
 source_stmt: T_SOURCE prompt T_EOL
 {
 	printd(DEBUG_PARSE, "%s:%d:source %s\n", zconf_curname(), zconf_lineno(), $2);
-	zconf_nextfile($2);
+	char *fullname = ensure_fullname(zconf_curname(), $2);
+	zconf_nextfile(fullname);
+	free(fullname);
 };
 
 /* comment entry */
@@ -726,7 +731,6 @@ void zconfdump(FILE *out)
 }
 
 #include "zconf.lex.c"
-#include "util.c"
 #include "confdata.c"
 #include "expr.c"
 #include "symbol.c"

@@ -85,8 +85,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
+#include <limits.h>
 
 #include "lkc.h"
+#include "util.c"
 
 #define printd(mask, fmt...) if (cdebug & (mask)) printf(fmt)
 
@@ -1923,7 +1926,9 @@ yyreduce:
 
     {
 	printd(DEBUG_PARSE, "%s:%d:source %s\n", zconf_curname(), zconf_lineno(), (yyvsp[(2) - (3)].string));
-	zconf_nextfile((yyvsp[(2) - (3)].string));
+	char *fullname = ensure_fullname(zconf_curname(), (yyvsp[(2) - (3)].string));
+	zconf_nextfile(fullname);
+	free(fullname);
 }
     break;
 
@@ -2530,7 +2535,6 @@ void zconfdump(FILE *out)
 }
 
 #include "zconf.lex.c"
-#include "util.c"
 #include "confdata.c"
 #include "expr.c"
 #include "symbol.c"

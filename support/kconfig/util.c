@@ -10,6 +10,41 @@
 #include <string.h>
 #include "lkc.h"
 
+char *ensure_fullname(const char *fullname, const char *filename)
+{
+	const char *pos;
+	char fname[PATH_MAX + 1];
+	char lname[PATH_MAX + 1];
+	char truename[PATH_MAX + 1];
+
+	getcwd(lname, sizeof(lname));
+	if (fullname && fullname[0] != '/') {
+		snprintf(fname, sizeof(fname), "%s/%s", lname, fullname);
+	} else {
+		strcpy(fname, fullname);
+	}
+
+	if (strchr(filename, '$') || filename[0] == '/') {
+		strncpy(truename, filename, sizeof(truename));
+	} else {
+		strncpy(truename, filename, sizeof(truename));
+		/* detect the file location */
+		for (pos = fname + strlen(fname); pos >= fname; pos--) {
+			if (*pos == '/') {
+				memset(lname, 0, sizeof(lname));
+				strncpy(lname, fname, pos - fname + 1);
+				strncat(lname, filename, sizeof(lname));
+				if (!access(lname, R_OK)) {
+					strncpy(truename, lname, sizeof(truename));
+					break;
+				}
+			}
+		}
+	}
+
+	return strdup(truename);
+}
+
 /* file already present in list? If not add it */
 struct file *file_lookup(const char *name)
 {
