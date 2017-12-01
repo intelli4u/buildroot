@@ -428,6 +428,7 @@ host-libtool:
 host-m4:
 
 include package/pkg-download.mk
+include package/pkg-make.mk
 include package/pkg-autotools.mk
 include package/pkg-cmake.mk
 include package/pkg-luarocks.mk
