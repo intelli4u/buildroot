@@ -3,6 +3,11 @@ if BR2_TOOLCHAIN_EXTERNAL_CUSTOM
 config BR2_TOOLCHAIN_EXTERNAL_PREFIX
 	default BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX
 
+config BR2_TOOLCHAIN_EXTERNAL_ALIAS
+	string "Toolchain name alias"
+	help
+	  Alias of toolchian prefix to make compiler work
+
 config BR2_PACKAGE_PROVIDES_TOOLCHAIN_EXTERNAL
 	default "toolchain-external-custom"
 

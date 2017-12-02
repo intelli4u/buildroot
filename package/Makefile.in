@@ -24,7 +24,11 @@ override MAKE = $(HOSTMAKE) \
 ifeq ($(BR2_TOOLCHAIN_BUILDROOT),y)
 TARGET_VENDOR = $(call qstrip,$(BR2_TOOLCHAIN_BUILDROOT_VENDOR))
 else
+ifeq ($(BR2_TOOLCHAIN_EXTERNAL),y)
+TARGET_VENDOR = $(word 2,$(subst -, ,$(BR2_TOOLCHAIN_EXTERNAL_CUSTOM_PREFIX)))
+else
 TARGET_VENDOR = buildroot
+endif
 endif
 
 # Sanity checks
@@ -37,7 +41,11 @@ $(error BR2_TOOLCHAIN_BUILDROOT_VENDOR cannot be 'unknown'. \
 endif
 
 # Compute GNU_TARGET_NAME
+ifneq ($(BR2_TOOLCHAIN_EXTERNAL_ALIAS),)
+GNU_TARGET_NAME = $(call qstrip,$(BR2_TOOLCHAIN_EXTERNAL_ALIAS))
+else
 GNU_TARGET_NAME = $(ARCH)-$(TARGET_VENDOR)-$(TARGET_OS)-$(LIBC)$(ABI)
+endif
 
 # FLAT binary format needs uclinux
 ifeq ($(BR2_BINFMT_FLAT),y)
