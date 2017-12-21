@@ -996,7 +996,9 @@ DL_TOOLS_DEPENDENCIES += $$(call extractor-dependency,$$($(2)_SOURCE))
 
 ifneq ($$($(2)_SOURCE),)
 ifeq ($$($(2)_SITE),)
+ifeq ($$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR),)
 $$(error $(2)_SITE cannot be empty when $(2)_SOURCE is not)
+endif
 endif
 endif
 
