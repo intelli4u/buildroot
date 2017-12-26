@@ -81,7 +81,7 @@ INITFILE=$1
 shift;
 
 MERGE_LIST=$*
-SED_CONFIG_EXP="s/^\(# \)\{0,1\}\(CONFIG_[a-zA-Z0-9_]*\)[= ].*/\2/p"
+SED_CONFIG_EXP="s/^\(# \)\{0,1\}\(BR2_[a-zA-Z0-9_]*\|CONFIG_[a-zA-Z0-9_]*\)[= ].*/\2/p"
 TMP_FILE=$(mktemp -t .tmp.config.XXXXXXXXXX)
 
 echo "Using $INITFILE as base"

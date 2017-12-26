@@ -913,8 +913,21 @@ defconfig: $(BUILD_DIR)/buildroot-config/conf prepare-kconfig
 define percent_defconfig
 # Override the BR2_DEFCONFIG from COMMON_CONFIG_ENV with the new defconfig
 %_defconfig: $(BUILD_DIR)/buildroot-config/conf $(1)/configs/%_defconfig prepare-kconfig
+ifneq ($(wildcard $(1)/configs/common_diffconfig),)
+	@$$(COMMON_CONFIG_ENV) BR2_DEFCONFIG=$(1)/configs/$$@ BR2_DIFFCONFIG=$(1)/configs/common_diffconfig \
+		$$< --olddefconfig $$(CONFIG_CONFIG_IN)
+	@cp -f $(BR2_CONFIG) $(BR2_CONFIG).common
+	@$(TOPDIR)/support/kconfig/merge_config.sh -O $(CONFIG_DIR) -m \
+		$$(BR2_CONFIG).common $(1)/configs/common_diffconfig
+	@cp -f $(BR2_CONFIG) $(BR2_CONFIG).def
+	@$(TOPDIR)/support/kconfig/merge_config.sh -O $(CONFIG_DIR) -m \
+		$$(BR2_CONFIG).def $(1)/configs/$$@
+	@$$(COMMON_CONFIG_ENV) BR2_DEFCONFIG=$(1)/configs/$$@ BR2_DIFFCONFIG=$(1)/configs/common_diffconfig \
+		$$< --defconfig=$(BR2_CONFIG) $$(CONFIG_CONFIG_IN)
+else
 	@$$(COMMON_CONFIG_ENV) BR2_DEFCONFIG=$(1)/configs/$$@ \
 		$$< --defconfig=$(1)/configs/$$@ $$(CONFIG_CONFIG_IN)
+endif
 endef
 $(eval $(foreach d,$(call reverse,$(TOPDIR) $(BR2_EXTERNAL_DIRS)),$(call percent_defconfig,$(d))$(sep)))
 
