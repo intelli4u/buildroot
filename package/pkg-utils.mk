@@ -63,6 +63,12 @@ endif
 endef
 
 #
+# fetch/check the package version possibly
+#
+get-package-version = $(shell support/scripts/check-package-version.py $(1))
+check-package-version = $(shell support/scripts/check-package-version.py $(1) $(2) $(3))
+
+#
 # legal-info helper functions
 #
 LEGAL_INFO_SEPARATOR = "::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
