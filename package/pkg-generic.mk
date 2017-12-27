@@ -431,9 +431,22 @@ $(2)_VERSION := $$(call sanitize,$$($(2)_DL_VERSION))
 
 ifdef $(3)_OVERRIDE2_SRCDIR
   $(2)_OVERRIDE2_SRCDIR ?= $$($(3)_OVERRIDE2_SRCDIR)
+  $(3)_OVERRIDE_SRCDIR =
+  $(2)_OVERRIDE_SRCDIR =
 else
 ifdef $(3)_OVERRIDE_SRCDIR
   $(2)_OVERRIDE_SRCDIR ?= $$($(3)_OVERRIDE_SRCDIR)
+endif
+endif
+
+ifneq ($$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR),)
+ifeq ($$($(2)_VERSION),)
+$(1)_VERSION := $$(call check-package-version,$$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR))
+ifeq ($$($(1)_VERSION),)
+$(2)_VERSION = custom
+else
+$(2)_VERSION = $$($(1)_VERSION)
+endif
 endif
 endif
 
@@ -460,10 +473,6 @@ endif
 
 $(2)_SRCDIR		       = $$($(2)_DIR)/$$($(2)_SUBDIR)
 $(2)_BUILDDIR		       ?= $$($(2)_SRCDIR)
-
-ifneq ($$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR),)
-$(2)_VERSION = custom
-endif
 
 ifndef $(2)_SOURCE
  ifdef $(3)_SOURCE
