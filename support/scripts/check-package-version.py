@@ -42,13 +42,13 @@ def version_compare(a, b):
     return cmp(lva, lvb)
 
 
-def parse_version(workingdir):
+def parse_version(workingdir, vfile):
     def _exists(filename):
         return os.path.exists(os.path.join(workingdir, filename))
 
     def _ensure_version_string(version):
         vers = version.split('-')
-        return re.match('^[0-9\.]+[A-Za-z0-9_]+$', vers[0]) is not None
+        return re.match('^[0-9]+[0-9\.]*[A-Za-z0-9_]+$', vers[0]) is not None
 
     def _read_pattern(filename, pattern=None):
         debug(':: %s - %s' % (filename, pattern))
@@ -67,17 +67,17 @@ def parse_version(workingdir):
 
         return None
 
-    def _read_item(filename, pattern):
-        match = _read_pattern(name, pattern)
+    def _read_item(filename, pattern, id=None):
+        match = _read_pattern(filename, pattern)
         if match:
-            return match.group(1).strip('\'"').strip()
+            return match.group(id or 1).strip('\'"').strip()
         else:
             return None
 
     def _configure_in(name):
-        def _ac_init(name):
+        def _ac_init(filename):
             version = ''
-            match = _read_item(name, 'AC_INIT\((.+)\)')
+            match = _read_item(filename, 'AC_INIT\((.+)\)')
             if match:
                 # AC_INIT([gdbm], [1.8.3])
                 # AC_INIT([avahi],[0.6.25],[avahi (at) lists (dot) freedesktop (dot) org])
@@ -87,9 +87,9 @@ def parse_version(workingdir):
 
             return version
 
-        def _auto_init_automake(name):
+        def _auto_init_automake(filename):
             version = ''
-            match = _read_item(name, 'AM_INIT_AUTOMAKE\((.+)\)')
+            match = _read_item(filename, 'AM_INIT_AUTOMAKE\((.+)\)')
             if match:
                 # AM_INIT_AUTOMAKE(bridge-utils,1.0.6)
                 # AM_INIT_AUTOMAKE(libevent,2.0.20-stable)
@@ -109,12 +109,17 @@ def parse_version(workingdir):
 
             return version.strip('[]')
 
-        def _my_version(name):
-            return _read_item(name, 'm4_define\(\[my_version\],\s+\[([^]]+)\]\)')
+        def _define_version(filename):
+            return _read_item(filename, 'define\(\[.*VERSION]\s*,\s*\[(.+)\]\)')
+
+        def _my_version(filename):
+            return _read_item(filename, 'm4_define\(\[my_version\],\s+\[([^]]+)\]\)')
 
         version = _ac_init(name)
         if not (version and _ensure_version_string(version)):
             version = _auto_init_automake(name)
+        if not (version and _ensure_version_string(version)):
+            version = _define_version(name)
         if not (version and _ensure_version_string(version)):
             version = _my_version(name)
 
@@ -138,14 +143,14 @@ def parse_version(workingdir):
         # Makefile:VERSION=1.6.6
 
         # busybox/Makefile
-        # VERSION = 1
-        # PATCHLEVEL = 7
-        # SUBLEVEL = 2
-        # EXTRAVERSION =
+        # VERSION = 2
+        # PATCHLEVEL = 6
+        # SUBLEVEL = 36
+        # EXTRAVERSION = .4
         for label in ('VERSION', 'PATCHLEVEL', 'SUBLEVEL', 'EXTRAVERSION'):
             version = _read_item(name, "%s\s*=\s*(.+)" % label)
             if version:
-                versions.append(version)
+                versions.append(version.strip('.'))
 
         if len(versions) > 0:
             return '.'.join(versions)
@@ -160,39 +165,109 @@ def parse_version(workingdir):
         return None
 
     def _version_h(name):
-        return _read_item(name, '#\s*define\s+[A-Za-z_]*VERSION\s+"([^"]+)"')
+        version = _read_item(name, '#\s*define\s+[A-Za-z_]*VERSION[A-Za-z_]*\s+"([^"]{2,})"')
+        if version:
+            return version
+
+        return None
+
+    def _version_c(name):
+        version = _read_item(name, '.+version(\[\]){0,1}\s*=\s*"([^"]+)"', 2)
+        if not version:
+            version = _read_item(name, '.+version_str(\[\]){0,1}\s*=\s*"([^"]+)"', 2)
+        if not version:
+            version = _read_item(name, '.+version_string(\[]){0,1}\s*=\s*"([^"]+)"', 2)
+        if version:
+            return version
+
+        return None
 
     def _version_sh(name):
         # version.sh:VERSION_NUMBER=0.9.3
-        return _read_item(name, 'VERSION_NUMBER\s*=\s*(.+)')
+        version = _read_item(name, 'VERSION_NUMBER\s*=\s*(.+)')
+        if version and _ensure_version_string(version):
+            return version
+
+        return None
+
+    def _version_py(name):
+        version = _read_item(name, 'version\s*=\s*"(.+)"')
+        if version and _ensure_version_string(version):
+            return version
+
+        return None
+
+    def _versison_spec(name):
+        # Version: 2.15
+        version = _read_item(name, '[Vv]ersion\s*:\s*(.+)')
+        if version and _ensure_version_string(version):
+            return version
+
+        # %define version 2.0.1
+        version = _read_item(name, '%define\s+[Vv]ersion\s+(.+)')
+        if version and _ensure_version_string(version):
+            return version
+
+        return None
 
     def _version_texi(name):
         # version.texi:2:@set VERSION 4.0.10
-        return _read_item(name, '@set\s+VERSION\s+(.+)')
+        version = _read_item(name, '@set\s+VERSION\s+(.+)')
+        if version and _ensure_version_string(version):
+            return version
 
-    HANDLER = (
-        (('VERSION', 'version'), _read_pattern),
-        (('configure.in', 'configure.ac'), _configure_in),
-        (('dist/configure', 'configure'), _configure),
-        (('Makefile', 'Makefile.in'), _makefile),
-        (('version.h', 'version.h.in', 'revision.h', 'zlib.h'), _version_h),
-        (('version.sh',), _version_sh),
-        (('version.texi',), _version_texi),
-    )
+        return None
 
-    for files, func in HANDLER:
-        for name in files:
-            if _exists(name):
-                version = func(name)
-                if version and _ensure_version_string(version):
-                    return version
+    if _exists('VERSION'):
+        return _read_pattern('VERSION')
+    elif _exists('version'):
+        return _read_pattern('version')
+    else:
+        HANDLER = (
+            (('configure.in', 'configure.ac'), _configure_in),
+            (('configure',), _configure),
+            (('Makefile', 'Makefile.in'), _makefile),
+            (('version.h', 'version.h.in', 'revision.h'), _version_h),
+            (('version.c', 'version.cc'), _version_c),
+            (('version.sh',), _version_sh),
+            (('version.py',), _version_py),
+            (('version.spec',), _versison_spec),
+            (('version.texi',), _version_texi),
+        )
 
-    return ''
+        version = ''
+        if vfile:
+            if _exists(vfile):
+                nfile = os.path.basename(vfile)
+                for files, func in HANDLER:
+                    for name in files:
+                        if nfile == name:
+                            version = func(vfile)
+                            if version and _ensure_version_string(version):
+                                break
+
+                if not version:
+                    for _, func in HANDLER:
+                        version = func(vfile)
+                        if version and _ensure_version_string(version):
+                            break
+        else:
+            for files, func in HANDLER:
+                for name in files:
+                    if _exists(name):
+                        version = func(name)
+                        if version and _ensure_version_string(version):
+                            break
+
+                if version:
+                    break
+
+        return version or ''
 
 
 def parse_args(args):
     global verbose
-    op, version, workingdir = '', '', os.getcwd()
+    op, version, workingdir, vfile = '', '', '', ''
 
     k = 0
     while k < len(args):
@@ -206,22 +281,29 @@ def parse_args(args):
             for v in args[k][2:]:
                 if v == 'v':
                     verbose += 1
-        else:
+        elif not workingdir:
             workingdir = args[k]
+        elif not vfile:
+            vfile = args[k]
+        else:
+            print('Error: Unknown option or parameter - %s' % args[k])
+            sys.exit(1)
 
         k += 1
 
-    return op, version, workingdir
+    if not workingdir:
+        workingdir = os.getcwd()
+
+    return op, version, workingdir, vfile
 
 
 if __name__ == '__main__':
-    op, version, workingdir = parse_args(sys.argv[1:])
-
-    delegation = parse_version(workingdir)
-
+    op, version, workingdir, vfile = parse_args(sys.argv[1:])
+    delegation = parse_version(workingdir, vfile)
     if not op:
         print(delegation or '')
-        sys.exit(0)
+    elif op in ('-h', '--help'):
+        print('%s [option] dir [version-file] ...' % sys.argv[0])
     else:
         diff = version_compare(version, delegation)
         if op == '-lt':
@@ -240,4 +322,6 @@ if __name__ == '__main__':
             exitval = False
 
         sys.exit(0 if exitval else 1)
+
+    sys.exit(0)
 

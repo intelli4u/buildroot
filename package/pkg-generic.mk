@@ -441,7 +441,7 @@ endif
 
 ifneq ($$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR),)
 ifeq ($$($(2)_VERSION),)
-$(1)_VERSION := $$(call check-package-version,$$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR))
+$(1)_VERSION := $$(call check-package-version,$$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR) $$($(2)_VERSION_FILE))
 ifeq ($$($(1)_VERSION),)
 $(2)_VERSION = custom
 else
