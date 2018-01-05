@@ -42,7 +42,7 @@ def version_compare(a, b):
     return cmp(lva, lvb)
 
 
-def parse_version(workingdir, vfile):
+def parse_version(workingdir, module, vfile):
     def _exists(filename):
         return os.path.exists(os.path.join(workingdir, filename))
 
@@ -218,6 +218,14 @@ def parse_version(workingdir, vfile):
 
         return None
 
+    def _news(name):
+        # ./NEWS:2:zeroconf-0.9:
+        version = _read_item(name, '%s[\- ](.+):.*' % module)
+        if version and _ensure_version_string(version):
+            return version
+
+        return None
+
     if _exists('VERSION'):
         return _read_pattern('VERSION')
     elif _exists('version'):
@@ -233,6 +241,7 @@ def parse_version(workingdir, vfile):
             (('version.py',), _version_py),
             (('version.spec',), _versison_spec),
             (('version.texi',), _version_texi),
+            (('NEWS',), _news),
         )
 
         version = ''
@@ -267,7 +276,7 @@ def parse_version(workingdir, vfile):
 
 def parse_args(args):
     global verbose
-    op, version, workingdir, vfile = '', '', '', ''
+    op, version, workingdir, module, vfile = '', '', '', '', ''
 
     k = 0
     while k < len(args):
@@ -283,6 +292,8 @@ def parse_args(args):
                     verbose += 1
         elif not workingdir:
             workingdir = args[k]
+        elif not module:
+            module = args[k]
         elif not vfile:
             vfile = args[k]
         else:
@@ -294,12 +305,12 @@ def parse_args(args):
     if not workingdir:
         workingdir = os.getcwd()
 
-    return op, version, workingdir, vfile
+    return op, version, workingdir, module, vfile
 
 
 if __name__ == '__main__':
-    op, version, workingdir, vfile = parse_args(sys.argv[1:])
-    delegation = parse_version(workingdir, vfile)
+    op, version, workingdir, module, vfile = parse_args(sys.argv[1:])
+    delegation = parse_version(workingdir, module, vfile)
     if not op:
         print(delegation or '')
     elif op in ('-h', '--help'):
