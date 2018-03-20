@@ -42,7 +42,7 @@ def version_compare(a, b):
     return cmp(lva, lvb)
 
 
-def parse_version(workingdir, module, vfile):
+def parse_version(workingdir, module, vfile, pattern):
     def _exists(filename):
         return os.path.exists(os.path.join(workingdir, filename))
 
@@ -74,7 +74,7 @@ def parse_version(workingdir, module, vfile):
         else:
             return None
 
-    def _configure_in(name):
+    def _configure_in(name, *args):
         def _ac_init(filename):
             version = ''
             match = _read_item(filename, 'AC_INIT\((.+)\)')
@@ -125,7 +125,12 @@ def parse_version(workingdir, module, vfile):
 
         return version
 
-    def _configure(name):
+    def _configure(name, pattern=None, *args):
+        if pattern:
+            match = _read_item(name, pattern)
+            if match:
+                return match
+
         # dist/configure:731:PACKAGE_VERSION='4.7.25'
         match = _read_item(name, 'PACKAGE_VERSION\s*=\s*(.+)')
         if match:
@@ -138,7 +143,12 @@ def parse_version(workingdir, module, vfile):
 
         return None
 
-    def _makefile(name):
+    def _makefile(name, pattern=None, *args):
+        if pattern:
+            version = _read_item(name, pattern)
+            if version:
+                return version
+
         versions = list()
         # Makefile:VERSION=1.6.6
 
@@ -164,14 +174,24 @@ def parse_version(workingdir, module, vfile):
 
         return None
 
-    def _version_h(name):
+    def _version_h(name, pattern=None, *args):
+        if pattern:
+            version = _read_item(name, pattern)
+            if version:
+                return version
+
         version = _read_item(name, '#\s*define\s+[A-Za-z_]*VERSION[A-Za-z_]*\s+"([^"]{2,})"')
         if version:
             return version
 
         return None
 
-    def _version_c(name):
+    def _version_c(name, pattern=None, *args):
+        if pattern:
+            version = _read_item(name, pattern)
+            if version:
+                return version
+
         version = _read_item(name, '.+version(\[\]){0,1}\s*=\s*"([^"]+)"', 2)
         if not version:
             version = _read_item(name, '.+version_str(\[\]){0,1}\s*=\s*"([^"]+)"', 2)
@@ -182,7 +202,12 @@ def parse_version(workingdir, module, vfile):
 
         return None
 
-    def _version_sh(name):
+    def _version_sh(name, pattern=None, *args):
+        if pattern:
+            version = _read_item(name, pattern)
+            if version:
+                return version
+
         # version.sh:VERSION_NUMBER=0.9.3
         version = _read_item(name, 'VERSION_NUMBER\s*=\s*(.+)')
         if version and _ensure_version_string(version):
@@ -190,14 +215,24 @@ def parse_version(workingdir, module, vfile):
 
         return None
 
-    def _version_py(name):
+    def _version_py(name, pattern=None, *args):
+        if pattern:
+            version = _read_item(name, pattern)
+            if version:
+                return version
+
         version = _read_item(name, 'version\s*=\s*"(.+)"')
         if version and _ensure_version_string(version):
             return version
 
         return None
 
-    def _versison_spec(name):
+    def _versison_spec(name, pattern=None, *args):
+        if pattern:
+            version = _read_item(name, pattern)
+            if version:
+                return version
+
         # Version: 2.15
         version = _read_item(name, '[Vv]ersion\s*:\s*(.+)')
         if version and _ensure_version_string(version):
@@ -210,7 +245,12 @@ def parse_version(workingdir, module, vfile):
 
         return None
 
-    def _version_texi(name):
+    def _version_texi(name, pattern=None, *args):
+        if pattern:
+            version = _read_item(name, pattern)
+            if version:
+                return version
+
         # version.texi:2:@set VERSION 4.0.10
         version = _read_item(name, '@set\s+VERSION\s+(.+)')
         if version and _ensure_version_string(version):
@@ -218,7 +258,7 @@ def parse_version(workingdir, module, vfile):
 
         return None
 
-    def _news(name):
+    def _news(name, pattern=None, *args):
         # ./NEWS:2:zeroconf-0.9:
         version = _read_item(name, '%s[\- ](.+):.*' % module)
         if version and _ensure_version_string(version):
@@ -251,20 +291,20 @@ def parse_version(workingdir, module, vfile):
                 for files, func in HANDLER:
                     for name in files:
                         if nfile == name:
-                            version = func(vfile)
+                            version = func(vfile, pattern)
                             if version and _ensure_version_string(version):
                                 break
 
                 if not version:
                     for _, func in HANDLER:
-                        version = func(vfile)
+                        version = func(vfile, pattern)
                         if version and _ensure_version_string(version):
                             break
         else:
             for files, func in HANDLER:
                 for name in files:
                     if _exists(name):
-                        version = func(name)
+                        version = func(name, pattern)
                         if version and _ensure_version_string(version):
                             break
 
@@ -276,7 +316,7 @@ def parse_version(workingdir, module, vfile):
 
 def parse_args(args):
     global verbose
-    op, version, workingdir, module, vfile = '', '', '', '', ''
+    op, version, workingdir, module, vfile, pattern = '', '', '', '', '', None
 
     k = 0
     while k < len(args):
@@ -296,6 +336,8 @@ def parse_args(args):
             module = args[k]
         elif not vfile:
             vfile = args[k]
+        elif not pattern:
+            pattern = args[k]
         else:
             print('Error: Unknown option or parameter - %s' % args[k])
             sys.exit(1)
@@ -305,16 +347,16 @@ def parse_args(args):
     if not workingdir:
         workingdir = os.getcwd()
 
-    return op, version, workingdir, module, vfile
+    return op, version, workingdir, module, vfile, pattern
 
 
 if __name__ == '__main__':
-    op, version, workingdir, module, vfile = parse_args(sys.argv[1:])
-    delegation = parse_version(workingdir, module, vfile)
+    op, version, workingdir, module, vfile, pattern = parse_args(sys.argv[1:])
+    delegation = parse_version(workingdir, module, vfile, pattern)
     if not op:
         print(delegation or '')
     elif op in ('-h', '--help'):
-        print('%s [option] dir [version-file] ...' % sys.argv[0])
+        print('%s [option] dir [module] [version-file] [pattern] ...' % sys.argv[0])
     else:
         diff = version_compare(version, delegation)
         if op == '-lt':

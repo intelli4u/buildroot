@@ -442,9 +442,9 @@ endif
 ifneq ($$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR),)
 ifeq ($$($(2)_VERSION),)
 ifneq ($$($(2)_VERSION_SCRIPT),)
-$(1)_VERSION := $$(shell $$($(2)_VERSION_SCRIPT) $$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR) $(1) $$($(2)_VERSION_FILE))
+$(1)_VERSION := $$(shell $$($(2)_VERSION_SCRIPT), $$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR) $(1) $$($(2)_VERSION_FILE) $$($(2)_VERSION_PATTERN))
 else
-$(1)_VERSION := $$(call check-package-version,$$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR) $(1) $$($(2)_VERSION_FILE))
+$(1)_VERSION := $$(call check-package-version, $$($(2)_OVERRIDE_SRCDIR)$$($(2)_OVERRIDE2_SRCDIR) $(1) $$($(2)_VERSION_FILE) $$($(2)_VERSION_PATTERN))
 endif
 ifeq ($$($(1)_VERSION),)
 $(2)_VERSION = custom
