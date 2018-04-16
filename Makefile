@@ -502,6 +502,17 @@ ifneq ($(GLOBAL_VARIABLE_FILE),)
 -include $(GLOBAL_VARIABLE_FILE)
 endif
 
+# Handling of BR2_ENVIRON_CONFIGS
+export_file := $(call qstrip,$(BR2_EXPORT_FILE))
+environ_configs := $(call qstrip,$(BR2_ENVIRON_CONFIGS))
+ifneq ($(environ_configs),)
+$(shell $(TOPDIR)/support/extra/build-environ.py \
+	-c '$(call qstrip,$(BR2_GLOBAL_EXPORT_VAR))' \
+	$(export_file) $(environ_configs))
+
+include $(export_file)
+endif
+
 include $(sort $(wildcard package/*/*.mk))
 
 include boot/common.mk

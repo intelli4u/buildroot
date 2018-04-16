@@ -686,6 +686,13 @@ config BR2_SHARED_STATIC_LIBS
 
 endchoice
 
+config BR2_ENVIRON_CONFIGS
+	string "files with rules for overrided packages and variables"
+	help
+	  Files to contain the rule for different overrided packages
+	  compiled with source codes, and the variables exported during
+	  the compilation. More than one file can be listed and the late
+	  one will override the values defined in the early files.
 
 config BR2_PACKAGE_OVERRIDE_FILE
 	string "location of a package override file"
