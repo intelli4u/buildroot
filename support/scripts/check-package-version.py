@@ -48,7 +48,7 @@ def parse_version(workingdir, module, vfile, pattern):
 
     def _ensure_version_string(version):
         vers = version.split('-')
-        return re.match('^[0-9]+[0-9\.]*[A-Za-z0-9_]+$', vers[0]) is not None
+        return re.match('^[vV]?[0-9]+[0-9\.]*[A-Za-z0-9_]+$', vers[0]) is not None
 
     def _read_line(filename):
         with open(os.path.join(workingdir, filename), 'r') as fp:
