@@ -299,7 +299,11 @@ def parse_version(workingdir, module, vfile, pattern):
                             if version and _ensure_version_string(version):
                                 break
 
-                if not version:
+                if not version and pattern:
+                    version = _read_item(vfile, pattern)
+                    if version and not _ensure_version_string(version):
+                        version = ''
+                else:
                     for _, func in HANDLER:
                         version = func(vfile, pattern)
                         if version and _ensure_version_string(version):
