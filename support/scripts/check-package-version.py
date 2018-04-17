@@ -50,17 +50,21 @@ def parse_version(workingdir, module, vfile, pattern):
         vers = version.split('-')
         return re.match('^[0-9]+[0-9\.]*[A-Za-z0-9_]+$', vers[0]) is not None
 
+    def _read_line(filename):
+        with open(os.path.join(workingdir, filename), 'r') as fp:
+            for origin in fp.readlines():
+                if not origin or origin.startswith('#'):
+                    continue
+
+                return origin.strip()
+
+        return ''
+
     def _read_pattern(filename, pattern=None):
         debug(':: %s - %s' % (filename, pattern))
         with open(os.path.join(workingdir, filename), 'r') as fp:
             for origin in fp.readlines():
                 line = origin.strip()
-                if not pattern:
-                    if line.startswith('#'):
-                        continue
-
-                    return line
-
                 ma = re.match(pattern, line)
                 if ma:
                     return ma
@@ -267,9 +271,9 @@ def parse_version(workingdir, module, vfile, pattern):
         return None
 
     if _exists('VERSION'):
-        return _read_pattern('VERSION')
+        return _read_line('VERSION')
     elif _exists('version'):
-        return _read_pattern('version')
+        return _read_line('version')
     else:
         HANDLER = (
             (('configure.in', 'configure.ac'), _configure_in),
