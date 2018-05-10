@@ -1,0 +1,18 @@
+diff --git a/glib-1.2.10/glib.h b/glib-1.2.10/glib.h
+index b83cf5d..9ca8cc0 100644
+--- a/glib-1.2.10/glib.h
++++ b/glib-1.2.10/glib.h
+@@ -203,12 +203,7 @@ extern "C" {
+ #endif
+ #ifndef G_INLINE_FUNC
+ #  ifdef __GNUC__
+-#    ifdef __OPTIMIZE__
+-#      define G_INLINE_FUNC extern inline
+-#    else
+-#      undef G_CAN_INLINE
+-#      define G_INLINE_FUNC extern
+-#    endif
++#    define G_INLINE_FUNC static inline
+ #  else /* !__GNUC__ */
+ #    ifdef G_CAN_INLINE
+ #      define G_INLINE_FUNC static inline
