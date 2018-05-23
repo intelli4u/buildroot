@@ -100,7 +100,12 @@ endef
 #
 define AUTOGEN_HOOK
 	@$(call MESSAGE,"Autogenerating")
-	cd $($(PKG)_SRCDIR) && $(if $($(PKG)_AUTOGEN_ENV),$($(PKG)_AUTOGEN_ENV),NOCONFIGURE=yes) ./$($(PKG)_AUTOGEN_SCRIPT) $($(PKG)_AUTOGEN_OPTS) $($(PKG)_AUTORECONF_OPTS)
+	cd $($(PKG)_SRCDIR) && $(if $($(PKG)_AUTOGEN_ENV),$($(PKG)_AUTOGEN_ENV),NOCONFIGURE=yes)\
+		$(if $($(PKG)_AUTOGEN_SCRIPT),./$($(PKG)_AUTOGEN_SCRIPT), \
+		  $(if $(wildcard $($(PKG)_SRCDIR)/autogen.sh $($(PKG)_SRCDIR)/bootstrap), \
+		    $(wildcard $($(PKG)_SRCDIR)/autogen.sh $($(PKG)_SRCDIR)/bootstrap) \
+		     $($(PKG)_AUTOGEN_OPTS) $($(PKG)_AUTORECONF_OPTS), \
+		    echo "No autogen script specified or detected" && false))
 endef
 
 #
@@ -198,7 +203,7 @@ ifeq ($(4),host)
  $(2)_AUTORECONF_OPTS ?= $$($(3)_AUTORECONF_OPTS)
 endif
 
-$(2)_AUTOGEN_SCRIPT		?= autogen.sh
+$(2)_AUTOGEN_SCRIPT		?=
 $(2)_CONF_ENV			?=
 $(2)_CONF_OPTS			?=
 $(2)_MAKE_ENV			?=
