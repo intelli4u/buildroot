@@ -62,6 +62,7 @@ LINUX_PATCHES = $(call qstrip,$(BR2_LINUX_KERNEL_PATCH))
 LINUX_PATCH = $(filter ftp://% http://% https://%,$(LINUX_PATCHES))
 
 LINUX_INSTALL_IMAGES = YES
+LINUX_INSTALL_STAGING = YES
 LINUX_DEPENDENCIES += host-kmod
 
 # host tools needed for kernel compression
@@ -407,6 +408,10 @@ endef
 ifeq ($(BR2_STRIP_strip),y)
 LINUX_MAKE_FLAGS += INSTALL_MOD_STRIP=1
 endif
+
+define LINUX_INSTALL_STAGING_CMDS
+	$(LINUX_MAKE_ENV) $(MAKE1) $(LINUX_MAKE_FLAGS) $(if $(LINUX_OVERRIDE2_SRCDIR), -C $(LINUX_OVERRIDE2_SRCDIR) O=$(@D), -C $(@D)) headers_install
+endef
 
 define LINUX_INSTALL_TARGET_CMDS
 	$(LINUX_INSTALL_KERNEL_IMAGE_TO_TARGET)
