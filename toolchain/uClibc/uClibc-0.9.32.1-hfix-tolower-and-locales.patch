@@ -1,0 +1,147 @@
+From b98192b80ee5654aa7c5590bcc266c5eec2c67a5 Mon Sep 17 00:00:00 2001
+From: Eugene Yudin <e.yudin@ndmsystems.com>
+Date: Mon, 24 Jul 2017 22:27:00 +0200
+Subject: fix tolower and locales
+
+The function towlower doesn't work with locales different from C.
+Issue was introduced in commit: 8cde3a9bf2856dcb9a759dec7ecb04a68e712254
+
+Call to setlocale is needed for correct generation of the table uplow_diff.
+Otherwise you receive compile time error "range assumption error" after
+uncommenting the call.
+
+Similar problem described here:
+http://lists.uclibc.org/pipermail/uclibc/2015-March/048852.html
+
+This commit fix the problem by using int32_t values.
+---
+ extra/locale/gen_ldc.c                         | 16 +++++++++++++++-
+ extra/locale/gen_wctype.c                      | 13 ++++++-------
+ extra/locale/locale_mmap.h                     |  2 +-
+ libc/misc/locale/locale.c                      |  2 +-
+ libc/sysdeps/linux/common/bits/uClibc_locale.h |  2 +-
+ 5 files changed, 24 insertions(+), 11 deletions(-)
+
+diff --git a/extra/locale/gen_ldc.c b/extra/locale/gen_ldc.c
+index 2cedbdd..5f45402 100644
+--- a/extra/locale/gen_ldc.c
++++ b/extra/locale/gen_ldc.c
+@@ -129,6 +129,20 @@ void out_i16(FILE *f, const int16_t *p, size_t n, char *comment)
+ 	fprintf(f, "\n},\n");
+ }
+ 
++void out_i32(FILE *f, const int32_t *p, size_t n, char *comment)
++{
++	size_t i;
++
++	fprintf(f, "{\t/* %s */", comment);
++	for (i = 0 ; i < n ; i++) {
++		if (!(i & 7)) {
++			fprintf(f, "\n\t");
++		}
++		fprintf(f, "%11d, ", p[i]);
++	}
++	fprintf(f, "\n},\n");
++}
++
+ void out_size_t(FILE *f, const size_t *p, size_t n, char *comment)
+ {
+ 	size_t i;
+@@ -194,7 +208,7 @@ int main(int argc, char **argv)
+ #ifdef __WCHAR_ENABLED
+ 	out_uc(lso, __LOCALE_DATA_WCctype_data, __LOCALE_DATA_WCctype_TBL_LEN, "tblwctype");
+ 	out_uc(lso, __LOCALE_DATA_WCuplow_data, __LOCALE_DATA_WCuplow_TBL_LEN, "tblwuplow");
+-	out_i16(lso, __LOCALE_DATA_WCuplow_diff_data, __LOCALE_DATA_WCuplow_diff_TBL_LEN, "tblwuplow_diff");
++	out_i32(lso, __LOCALE_DATA_WCuplow_diff_data, __LOCALE_DATA_WCuplow_diff_TBL_LEN, "tblwuplow_diff");
+ /* 	const unsigned char tblwcomb[WCcomb_TBL_LEN]; */
+ 	/* width?? */
+ #endif /* __WCHAR_ENABLED */
+diff --git a/extra/locale/gen_wctype.c b/extra/locale/gen_wctype.c
+index 7034509..99c505d 100644
+--- a/extra/locale/gen_wctype.c
++++ b/extra/locale/gen_wctype.c
+@@ -83,8 +83,8 @@
+ #define mywxdigit(D,C) (mywdigit(D,C) || (unsigned)(((C) | 0x20) - 'a') <= 5)
+ 
+ typedef struct {
+-	short l;
+-	short u;
++	int32_t l;
++	int32_t u;
+ } uldiff_entry;
+ 
+ typedef struct {
+@@ -227,12 +227,11 @@ int main(int argc, char **argv)
+ 			++verbose;
+ 			continue;
+ 		}
+-	/* setlocale might be just a stub */
+-	/*	if (!setlocale(LC_CTYPE, *argv)) {
++		/* setlocale might be just a stub */
++		if (!setlocale(LC_CTYPE, *argv)) {
+ 			verbose_msg("setlocale(LC_CTYPE,%s) failed!  Skipping this locale...\n", *argv);
+ 			continue;
+ 		}
+-	*/
+ 		if (!(totitle = wctrans("totitle"))) {
+ 			verbose_msg("no totitle transformation.\n");
+ 		}
+@@ -402,7 +401,7 @@ int main(int argc, char **argv)
+ 				u = (long)(int) towupper(c) - c;
+ 				ult[c] = 0;
+ 				if (l || u) {
+-					if ((l != (short)l) || (u != (short)u)) {
++					if ((l != (int32_t)l) || (u != (int32_t)u)) {
+ 						verbose_msg("range assumption error!  %x  %ld  %ld\n", c, l, u);
+ 						return EXIT_FAILURE;
+ 					}
+@@ -684,7 +683,7 @@ int main(int argc, char **argv)
+ 
+ 		printf("#define __LOCALE_DATA_WCuplow_diffs  %7u\n", ul_count);
+ 		printf("\n#ifdef WANT_WCuplow_diff_data\n\n");
+-		printf("\nstatic const short __LOCALE_DATA_WCuplow_diff_data[%zu] = {",
++		printf("\nstatic const int32_t __LOCALE_DATA_WCuplow_diff_data[%zu] = {",
+ 			   2 * (size_t) ul_count);
+ 		for (i = 0; i < ul_count; i++) {
+ 			if (i % 4 == 0) {
+diff --git a/extra/locale/locale_mmap.h b/extra/locale/locale_mmap.h
+index 5b0df90..d0ae9af 100644
+--- a/extra/locale/locale_mmap.h
++++ b/extra/locale/locale_mmap.h
+@@ -45,7 +45,7 @@ typedef struct {
+ #ifdef __WCHAR_ENABLED
+ 	const unsigned char tblwctype[__LOCALE_DATA_WCctype_TBL_LEN];
+ 	const unsigned char tblwuplow[__LOCALE_DATA_WCuplow_TBL_LEN];
+-	const int16_t tblwuplow_diff[__LOCALE_DATA_WCuplow_diff_TBL_LEN];
++	const int32_t tblwuplow_diff[__LOCALE_DATA_WCuplow_diff_TBL_LEN];
+ /* 	const unsigned char tblwcomb[WCcomb_TBL_LEN]; */
+ 	/* width?? */
+ #endif
+diff --git a/libc/misc/locale/locale.c b/libc/misc/locale/locale.c
+index e38792b..d555f5d 100644
+--- a/libc/misc/locale/locale.c
++++ b/libc/misc/locale/locale.c
+@@ -820,7 +820,7 @@ void attribute_hidden _locale_init_l(__locale_t base)
+ 	base->tblwuplow
+ 		= (const unsigned char *) &__locale_mmap->tblwuplow;
+ 	base->tblwuplow_diff
+-		= (const int16_t *) &__locale_mmap->tblwuplow_diff;
++		= (const int32_t *) &__locale_mmap->tblwuplow_diff;
+ /* 	base->tblwcomb */
+ /* 		= (const unsigned char *) &__locale_mmap->tblwcomb; */
+ 	/* width?? */
+diff --git a/libc/sysdeps/linux/common/bits/uClibc_locale.h b/libc/sysdeps/linux/common/bits/uClibc_locale.h
+index 6598eaf..43c1e51 100644
+--- a/libc/sysdeps/linux/common/bits/uClibc_locale.h
++++ b/libc/sysdeps/linux/common/bits/uClibc_locale.h
+@@ -192,7 +192,7 @@ struct __uclibc_locale_struct {
+ 	const unsigned char *tblwctype;
+ 	const unsigned char *tblwuplow;
+ /* 	const unsigned char *tblwcomb; */
+-	const int16_t *tblwuplow_diff; /* yes... signed */
++	const int32_t *tblwuplow_diff; /* yes... signed */
+ 	/* width?? */
+ 
+ 	wchar_t decimal_point_wc;
+-- 
+cgit v0.11.2-3-g2eb4
