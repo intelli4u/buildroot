@@ -191,10 +191,14 @@ $(GCC_DIR)/.unpacked: $(DL_DIR)/$(GCC_SOURCE)
 gcc-patched: $(GCC_DIR)/.patched
 $(GCC_DIR)/.patched: $(GCC_DIR)/.unpacked
 	# Apply any files named gcc-*.patch from the source directory to gcc
-ifneq ($(wildcard $(GCC_PATCH_DIR)),)
-	support/scripts/apply-patches.sh $(GCC_DIR) $(GCC_PATCH_DIR) \*.patch $(GCC_PATCH_EXTRA)
-endif
-
+	for patchdir in \
+	    package/gcc/$(GCC_VERSION) \
+	    $(addsuffix /gcc/$(GCC_VERSION),$(call qstrip,$(BR2_GLOBAL_PATCH_DIR))) \
+	    $(addsuffix /gcc,$(call qstrip,$(BR2_GLOBAL_PATCH_DIR))) ; do \
+		if test -d $${patchdir}; then \
+			support/scripts/apply-patches.sh $(GCC_DIR) $${patchdir} \*.patch || exit 1; \
+		fi; \
+	done
 ifeq ($(ARCH)-$(BR2_GCC_SHARED_LIBGCC),powerpc-y)
 ifneq ($(BR2_SOFT_FLOAT),)
 	support/scripts/apply-patches.sh $(GCC_DIR) toolchain/gcc/$(GCC_VERSION) powerpc-link-with-math-lib.patch.conditional

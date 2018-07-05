@@ -79,12 +79,26 @@ $(UCLIBC_DIR)/.unpacked: $(DL_DIR)/$(UCLIBC_SOURCE)
 uclibc-patched: $(UCLIBC_DIR)/.patched
 $(UCLIBC_DIR)/.patched: $(UCLIBC_DIR)/.unpacked
 ifneq ($(BR2_UCLIBC_VERSION_SNAPSHOT),y)
-	support/scripts/apply-patches.sh $(UCLIBC_DIR) $(UCLIBC_PATCH_DIR) \
-		uClibc-$(UCLIBC_VERSION)-\*.patch \
-		uClibc-$(UCLIBC_VERSION)-\*.patch.$(ARCH)
+	for patchdir in \
+		$(UCLIBC_PATCH_DIR) \
+		$(addsuffix /uClibc/$(UCLIBC_VERSION),$(call qstrip,$(BR2_GLOBAL_PATCH_DIR))) \
+		$(addsuffix /uClibc,$(call qstrip,$(BR2_GLOBAL_PATCH_DIR))) ; do \
+			if test -d $${patchdir} ; then \
+				support/scripts/apply-patches.sh $(UCLIBC_DIR) $${patchdir} \
+					uClibc-$(UCLIBC_VERSION)-\*.patch \
+					uClibc-$(UCLIBC_VERSION)-\*.patch.$(ARCH); \
+			fi; \
+	done
 else
-	support/scripts/apply-patches.sh $(UCLIBC_DIR) $(UCLIBC_PATCH_DIR) \
-		uClibc.\*.patch uClibc.\*.patch.$(ARCH)
+	for patchdir in \
+		$(UCLIBC_PATCH_DIR) \
+		$(addsuffix /uClibc/$(UCLIBC_VERSION),$(call qstrip,$(BR2_GLOBAL_PATCH_DIR))) \
+		$(addsuffix /uClibc,$(call qstrip,$(BR2_GLOBAL_PATCH_DIR))) ; do \
+			if test -d $${patchdir} ; then \
+				support/scripts/apply-patches.sh $(UCLIBC_DIR) $${patchdir} \
+					uClibc.\*.patch uClibc.\*.patch.$(ARCH); \
+			fi; \
+	done
 endif
 	touch $@
 
