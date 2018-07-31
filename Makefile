@@ -91,7 +91,7 @@ endif
 # line doesn't affect the environment of $(shell ..) calls, so
 # explictly throw away any output from 'cd' here.
 export CDPATH:=
-BASE_DIR := $(shell mkdir -p $(O) && cd $(O) >/dev/null && pwd)
+export BASE_DIR := $(shell mkdir -p $(O) && cd $(O) >/dev/null && pwd)
 $(if $(BASE_DIR),, $(error output directory "$(O)" does not exist))
 
 BUILD_DIR:=$(BASE_DIR)/build
