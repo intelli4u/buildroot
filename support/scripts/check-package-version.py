@@ -262,6 +262,14 @@ def parse_version(workingdir, module, vfile, pattern):
 
         return None
 
+    def _version_xml(name, pattern=None, *args):
+        # <version>2.9.5</version>
+        version = _read_item(name, '<version>(.+)</version>')
+        if version and _ensure_version_string(version):
+            return version
+
+        return None
+
     def _news(name, pattern=None, *args):
         # ./NEWS:2:zeroconf-0.9:
         version = _read_item(name, '%s[\- ](.+):.*' % module)
