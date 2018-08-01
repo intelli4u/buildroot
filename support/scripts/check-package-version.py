@@ -52,7 +52,7 @@ def parse_version(workingdir, module, vfile, pattern):
 
     def _read_line(filename):
         with open(os.path.join(workingdir, filename), 'r') as fp:
-            for origin in fp.readlines():
+            for origin in fp:
                 if not origin or origin.startswith('#'):
                     continue
 
@@ -63,7 +63,7 @@ def parse_version(workingdir, module, vfile, pattern):
     def _read_pattern(filename, pattern=None):
         debug(':: %s - %s' % (filename, pattern))
         with open(os.path.join(workingdir, filename), 'r') as fp:
-            for origin in fp.readlines():
+            for origin in fp:
                 line = origin.strip()
                 ma = re.match(pattern, line)
                 if ma:
@@ -130,11 +130,6 @@ def parse_version(workingdir, module, vfile, pattern):
         return version
 
     def _configure(name, pattern=None, *args):
-        if pattern:
-            match = _read_item(name, pattern)
-            if match:
-                return match
-
         # dist/configure:731:PACKAGE_VERSION='4.7.25'
         match = _read_item(name, 'PACKAGE_VERSION\s*=\s*(.+)')
         if match:
@@ -148,11 +143,6 @@ def parse_version(workingdir, module, vfile, pattern):
         return None
 
     def _makefile(name, pattern=None, *args):
-        if pattern:
-            version = _read_item(name, pattern)
-            if version:
-                return version
-
         versions = list()
         # Makefile:VERSION=1.6.6
 
@@ -179,11 +169,6 @@ def parse_version(workingdir, module, vfile, pattern):
         return None
 
     def _version_h(name, pattern=None, *args):
-        if pattern:
-            version = _read_item(name, pattern)
-            if version:
-                return version
-
         version = _read_item(name, '#\s*define\s+[A-Za-z_]*VERSION[A-Za-z_]*\s+"([^"]{2,})"')
         if version:
             return version
@@ -191,11 +176,6 @@ def parse_version(workingdir, module, vfile, pattern):
         return None
 
     def _version_c(name, pattern=None, *args):
-        if pattern:
-            version = _read_item(name, pattern)
-            if version:
-                return version
-
         version = _read_item(name, '.+version(\[\]){0,1}\s*=\s*"([^"]+)"', 2)
         if not version:
             version = _read_item(name, '.+version_str(\[\]){0,1}\s*=\s*"([^"]+)"', 2)
@@ -207,11 +187,6 @@ def parse_version(workingdir, module, vfile, pattern):
         return None
 
     def _version_sh(name, pattern=None, *args):
-        if pattern:
-            version = _read_item(name, pattern)
-            if version:
-                return version
-
         # version.sh:VERSION_NUMBER=0.9.3
         version = _read_item(name, 'VERSION_NUMBER\s*=\s*(.+)')
         if version and _ensure_version_string(version):
@@ -220,11 +195,6 @@ def parse_version(workingdir, module, vfile, pattern):
         return None
 
     def _version_py(name, pattern=None, *args):
-        if pattern:
-            version = _read_item(name, pattern)
-            if version:
-                return version
-
         version = _read_item(name, 'version\s*=\s*"(.+)"')
         if version and _ensure_version_string(version):
             return version
@@ -232,11 +202,6 @@ def parse_version(workingdir, module, vfile, pattern):
         return None
 
     def _versison_spec(name, pattern=None, *args):
-        if pattern:
-            version = _read_item(name, pattern)
-            if version:
-                return version
-
         # Version: 2.15
         version = _read_item(name, '[Vv]ersion\s*:\s*(.+)')
         if version and _ensure_version_string(version):
@@ -250,11 +215,6 @@ def parse_version(workingdir, module, vfile, pattern):
         return None
 
     def _version_texi(name, pattern=None, *args):
-        if pattern:
-            version = _read_item(name, pattern)
-            if version:
-                return version
-
         # version.texi:2:@set VERSION 4.0.10
         version = _read_item(name, '@set\s+VERSION\s+(.+)')
         if version and _ensure_version_string(version):
