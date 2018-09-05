@@ -5,6 +5,11 @@ config BR2_TARGET_ROOTFS_SQUASHFS
 
 if BR2_TARGET_ROOTFS_SQUASHFS
 
+config BR2_TARGET_ROOTFS_SQUASHFS_ARGS
+	string "Squashfs command line args"
+	help
+	  Set extra squashfs command line arguements for customization.
+
 choice
 	prompt "Compression algorithm"
 	default BR2_TARGET_ROOTFS_SQUASHFS4_GZIP
