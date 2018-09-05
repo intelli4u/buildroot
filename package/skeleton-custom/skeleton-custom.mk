@@ -73,9 +73,9 @@ endef
 # need the /lib and /usr/lib appropriately setup. Since we ensure,
 # above, that they are correct in the skeleton, we can simply copy the
 # skeleton to staging.
-define SKELETON_CUSTOM_INSTALL_STAGING_CMDS
-	$(call SYSTEM_RSYNC,$(SKELETON_CUSTOM_PATH),$(STAGING_DIR))
-	$(call SYSTEM_LIB_SYMLINK,$(STAGING_DIR))
-endef
+#define SKELETON_CUSTOM_INSTALL_STAGING_CMDS
+#	$(call SYSTEM_RSYNC,$(SKELETON_CUSTOM_PATH),$(STAGING_DIR))
+#	$(call SYSTEM_LIB_SYMLINK,$(STAGING_DIR))
+#endef
 
 $(eval $(generic-package))
