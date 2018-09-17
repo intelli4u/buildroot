@@ -429,6 +429,18 @@ else
 endif
 $(2)_VERSION := $$(call sanitize,$$($(2)_DL_VERSION))
 
+ifndef $(2)_VERSION_FILE
+ ifdef $(3)_VERSION_FILE
+  $(2)_VERSION_FILE := $$($(3)_VERSION_FILE)
+ endif
+endif
+
+ifndef $(2)_VERSION_PATTERN
+ ifdef $(3)_VERSION_PATTERN
+  $(2)_VERSION_PATTERN := $$($(3)_VERSION_PATTERN)
+ endif
+endif
+
 ifdef $(3)_OVERRIDE2_SRCDIR
   $(2)_OVERRIDE2_SRCDIR ?= $$($(3)_OVERRIDE2_SRCDIR)
   $(3)_OVERRIDE_SRCDIR =
