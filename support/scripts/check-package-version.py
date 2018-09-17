@@ -50,7 +50,7 @@ def parse_version(workingdir, module, vfile, pattern):
         vers = version.split('-')
         return re.match('^[vV]?[0-9]+[0-9\.]*[A-Za-z0-9_]+$', vers[0]) is not None
 
-    def _read_line(filename):
+    def _read_line(filename, *args):
         with open(os.path.join(workingdir, filename), 'r') as fp:
             for origin in fp:
                 if not origin or origin.startswith('#'):
@@ -238,56 +238,65 @@ def parse_version(workingdir, module, vfile, pattern):
 
         return None
 
-    if _exists('VERSION'):
-        return _read_line('VERSION')
-    elif _exists('version'):
-        return _read_line('version')
-    else:
-        HANDLER = (
-            (('configure.in', 'configure.ac'), _configure_in),
-            (('configure',), _configure),
-            (('Makefile', 'Makefile.in'), _makefile),
-            (('version.h', 'version.h.in', 'revision.h'), _version_h),
-            (('version.c', 'version.cc'), _version_c),
-            (('version.sh',), _version_sh),
-            (('version.py',), _version_py),
-            (('version.spec',), _versison_spec),
-            (('version.texi',), _version_texi),
-            (('NEWS',), _news),
-        )
+    HANDLER = (
+        (('VERSION', 'version'), _read_line),
+        (('doc/version.xsa',), _version_xml),
+        (('configure.in', 'configure.ac'), _configure_in),
+        (('configure',), _configure),
+        (('Makefile', 'Makefile.in'), _makefile),
+        (('version.h', 'version.h.in', 'revision.h'), _version_h),
+        (('version.c', 'version.cc'), _version_c),
+        (('version.sh',), _version_sh),
+        (('version.py',), _version_py),
+        (('version.spec',), _versison_spec),
+        (('version.texi',), _version_texi),
+        (('NEWS',), _news),
+    )
 
+    def detect_version(filename, pattern=None, verify=True):
         version = ''
-        if vfile:
-            if _exists(vfile):
-                nfile = os.path.basename(vfile)
-                for files, func in HANDLER:
-                    for name in files:
-                        if nfile == name:
-                            version = func(vfile, pattern)
-                            if version and _ensure_version_string(version):
-                                break
 
-                if not version and pattern:
-                    version = _read_item(vfile, pattern)
-                    if version and not _ensure_version_string(version):
-                        version = ''
-                else:
-                    for _, func in HANDLER:
-                        version = func(vfile, pattern)
-                        if version and _ensure_version_string(version):
+        for files, func in HANDLER:
+            for name in files:
+                if filename:
+                    if verify and not filename.endswith(name):
+                        continue
+
+                    name = filename
+
+                if _exists(name):
+                    version = func(name, pattern)
+                    if version:
+                        if _ensure_version_string(version):
                             break
-        else:
-            for files, func in HANDLER:
-                for name in files:
-                    if _exists(name):
-                        version = func(name, pattern)
-                        if version and _ensure_version_string(version):
-                            break
+                        else:
+                            version = ''
 
-                if version:
-                    break
+            if version:
+                break
 
-        return version or ''
+        return version
+
+    version = ''
+    if vfile:
+        if _exists(vfile):
+            if pattern:
+                version = _read_item(vfile, pattern)
+            else:
+                version = _read_line(vfile)
+
+            if version and not _ensure_version_string(version):
+                version = ''
+
+            if not version:
+                version = detect_version(vfile, pattern)
+
+            if not version:
+                version = detect_version(vfile, pattern, verify=False)
+    else:
+        version = detect_version(None, pattern)
+
+    return version or ''
 
 
 def parse_args(args):
