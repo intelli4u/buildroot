@@ -17,7 +17,7 @@ def debug(*args):
 
 def version_compare(a, b):
     def _ensure(v):
-        if re.match('\d+', v):
+        if re.match(r'\d+', v):
             return int(v)
         else:
             return v
@@ -48,7 +48,7 @@ def parse_version(workingdir, module, vfile, pattern):
 
     def _ensure_version_string(version):
         vers = version.split('-')
-        return re.match('^[vV]?[0-9]+[0-9\.]*[A-Za-z0-9_]+$', vers[0]) is not None
+        return re.match(r'^[vV]?[0-9]+[0-9\.]*[A-Za-z0-9_]+$', vers[0]) is not None
 
     def _read_line(filename, *args):
         with open(os.path.join(workingdir, filename), 'r') as fp:
@@ -81,7 +81,7 @@ def parse_version(workingdir, module, vfile, pattern):
     def _configure_in(name, *args):
         def _ac_init(filename):
             version = ''
-            match = _read_item(filename, 'AC_INIT\((.+)\)')
+            match = _read_item(filename, r'AC_INIT\((.+)\)')
             if match:
                 # AC_INIT([gdbm], [1.8.3])
                 # AC_INIT([avahi],[0.6.25],[avahi (at) lists (dot) freedesktop (dot) org])
@@ -93,7 +93,7 @@ def parse_version(workingdir, module, vfile, pattern):
 
         def _auto_init_automake(filename):
             version = ''
-            match = _read_item(filename, 'AM_INIT_AUTOMAKE\((.+)\)')
+            match = _read_item(filename, r'AM_INIT_AUTOMAKE\((.+)\)')
             if match:
                 # AM_INIT_AUTOMAKE(bridge-utils,1.0.6)
                 # AM_INIT_AUTOMAKE(libevent,2.0.20-stable)
@@ -131,12 +131,12 @@ def parse_version(workingdir, module, vfile, pattern):
 
     def _configure(name, pattern=None, *args):
         # dist/configure:731:PACKAGE_VERSION='4.7.25'
-        match = _read_item(name, 'PACKAGE_VERSION\s*=\s*(.+)')
+        match = _read_item(name, r'PACKAGE_VERSION\s*=\s*(.+)')
         if match:
             return match
 
         # configure:1720:VERSION=2.7
-        match = _read_item(name, 'VERSION\s*=\s*(.+)')
+        match = _read_item(name, r'VERSION\s*=\s*(.+)')
         if match and _ensure_version_string(match):
             return match
 
@@ -152,7 +152,7 @@ def parse_version(workingdir, module, vfile, pattern):
         # SUBLEVEL = 36
         # EXTRAVERSION = .4
         for label in ('VERSION', 'PATCHLEVEL', 'SUBLEVEL', 'EXTRAVERSION'):
-            version = _read_item(name, "%s\s*=\s*(.+)" % label)
+            version = _read_item(name, r'%s\s*=\s*(.+)' % label)
             if version:
                 versions.append(version.strip('.'))
 
@@ -160,7 +160,7 @@ def parse_version(workingdir, module, vfile, pattern):
             return '.'.join(versions)
 
         # Makefile:DISTNAME=bzip2-1.0.6
-        version = _read_item(name, 'DISTNAME\s*=\s*(.+)')
+        version = _read_item(name, r'DISTNAME\s*=\s*(.+)')
         if version:
             for item in version.split('-'):
                 if _ensure_version_string(item):
@@ -169,18 +169,18 @@ def parse_version(workingdir, module, vfile, pattern):
         return None
 
     def _version_h(name, pattern=None, *args):
-        version = _read_item(name, '#\s*define\s+[A-Za-z_]*VERSION[A-Za-z_]*\s+"([^"]{2,})"')
+        version = _read_item(name, r'#\s*define\s+[A-Za-z_]*VERSION[A-Za-z_]*\s+"([^"]{2,})"')
         if version:
             return version
 
         return None
 
     def _version_c(name, pattern=None, *args):
-        version = _read_item(name, '.+version(\[\]){0,1}\s*=\s*"([^"]+)"', 2)
+        version = _read_item(name, r'.+version(\[\]){0,1}\s*=\s*"([^"]+)"', 2)
         if not version:
-            version = _read_item(name, '.+version_str(\[\]){0,1}\s*=\s*"([^"]+)"', 2)
+            version = _read_item(name, r'.+version_str(\[\]){0,1}\s*=\s*"([^"]+)"', 2)
         if not version:
-            version = _read_item(name, '.+version_string(\[]){0,1}\s*=\s*"([^"]+)"', 2)
+            version = _read_item(name, r'.+version_string(\[]){0,1}\s*=\s*"([^"]+)"', 2)
         if version:
             return version
 
@@ -188,14 +188,14 @@ def parse_version(workingdir, module, vfile, pattern):
 
     def _version_sh(name, pattern=None, *args):
         # version.sh:VERSION_NUMBER=0.9.3
-        version = _read_item(name, 'VERSION_NUMBER\s*=\s*(.+)')
+        version = _read_item(name, r'VERSION_NUMBER\s*=\s*(.+)')
         if version and _ensure_version_string(version):
             return version
 
         return None
 
     def _version_py(name, pattern=None, *args):
-        version = _read_item(name, 'version\s*=\s*"(.+)"')
+        version = _read_item(name, r'version\s*=\s*"(.+)"')
         if version and _ensure_version_string(version):
             return version
 
@@ -203,12 +203,12 @@ def parse_version(workingdir, module, vfile, pattern):
 
     def _versison_spec(name, pattern=None, *args):
         # Version: 2.15
-        version = _read_item(name, '[Vv]ersion\s*:\s*(.+)')
+        version = _read_item(name, r'[Vv]ersion\s*:\s*(.+)')
         if version and _ensure_version_string(version):
             return version
 
         # %define version 2.0.1
-        version = _read_item(name, '%define\s+[Vv]ersion\s+(.+)')
+        version = _read_item(name, r'%define\s+[Vv]ersion\s+(.+)')
         if version and _ensure_version_string(version):
             return version
 
@@ -216,7 +216,7 @@ def parse_version(workingdir, module, vfile, pattern):
 
     def _version_texi(name, pattern=None, *args):
         # version.texi:2:@set VERSION 4.0.10
-        version = _read_item(name, '@set\s+VERSION\s+(.+)')
+        version = _read_item(name, r'@set\s+VERSION\s+(.+)')
         if version and _ensure_version_string(version):
             return version
 
@@ -224,7 +224,7 @@ def parse_version(workingdir, module, vfile, pattern):
 
     def _version_xml(name, pattern=None, *args):
         # <version>2.9.5</version>
-        version = _read_item(name, '<version>(.+)</version>')
+        version = _read_item(name, r'<version>(.+)</version>')
         if version and _ensure_version_string(version):
             return version
 
@@ -232,7 +232,7 @@ def parse_version(workingdir, module, vfile, pattern):
 
     def _news(name, pattern=None, *args):
         # ./NEWS:2:zeroconf-0.9:
-        version = _read_item(name, '%s[\- ](.+):.*' % module)
+        version = _read_item(name, r'%s[\- ](.+):.*' % module)
         if version and _ensure_version_string(version):
             return version
 
