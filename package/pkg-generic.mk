@@ -174,7 +174,7 @@ $(BUILD_DIR)/%/.stamp_rsynced:
 	@$(call MESSAGE,"Syncing from source dir $(SRCDIR)")
 	$(foreach hook,$($(PKG)_PRE_RSYNC_HOOKS),$(call $(hook))$(sep))
 	@test -d $(SRCDIR) || (echo "ERROR: $(SRCDIR) does not exist" ; exit 1)
-	rsync -au --chmod=u=rwX,go=rX $(RSYNC_VCS_EXCLUSIONS) $(call qstrip,$(SRCDIR))/ $(@D)
+	rsync $(if $($(PKG)_RSYNC_OPTIONS),$($(PKG)_RSYNC_OPTIONS),-au) --chmod=u=rwX,go=rX $(RSYNC_VCS_EXCLUSIONS) $(call qstrip,$(SRCDIR))/ $(@D)
 	$(foreach hook,$($(PKG)_POST_RSYNC_HOOKS),$(call $(hook))$(sep))
 	$(Q)touch $@
 
@@ -577,6 +577,12 @@ $(2)_REDIST_SOURCES_DIR = $$(REDIST_SOURCES_DIR_$$(call UPPERCASE,$(4)))/$$($(2)
 $(2)_ADD_TOOLCHAIN_DEPENDENCY	?= YES
 $(2)_ADD_SKELETON_DEPENDENCY	?= YES
 
+# rsync extension options
+ifndef $(2)_RSYNC_OPTIONS
+ ifdef $(3)_RSYNC_OPTIONS
+  $(2)_RSYNC_OPTIONS = $$($(3)_RSYNC_OPTIONS)
+ endif
+endif
 
 ifeq ($(4),target)
 ifeq ($$($(2)_ADD_SKELETON_DEPENDENCY),YES)
