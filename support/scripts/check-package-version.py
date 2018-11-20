@@ -113,13 +113,42 @@ def parse_version(workingdir, module, vfile, pattern):
 
             return version.strip('[]')
 
+        def _define(filename, command, pattern):
+            ver = _read_item(filename, r'%s\(\s*\[?%s\]?\s*,\s*\[(.+)\]\)' % (command, pattern))
+            if ver is not None:
+                return ver
+            else:
+                return _read_item(filename, r'%s\(\s*\[%s\]\s*,\s*(.+)\)' % (command, pattern))
+
         def _define_version(filename):
-            return _read_item(filename, 'define\(\[.*VERSION]\s*,\s*\[(.+)\]\)')
+            return _define(filename, 'define', '.*VERSION')
 
         def _my_version(filename):
-            return _read_item(filename, 'm4_define\(\[my_version\],\s+\[([^]]+)\]\)')
+            return _define(filename, 'm4_define', 'my_version')
 
-        version = _ac_init(name)
+        def _build_up_version(filename, pattern):
+            version = pattern
+            while True:
+                m = re.search(r'@\(([A-Za-z0-9_]+)\)', version)
+                if not m:
+                    break
+
+                ver = m.group(1)
+                subver = _define(filename, 'm4_define', ver)
+                if not subver:
+                    subver = _define(filename, 'define', ver)
+
+                version = version.replace('@(%s)' % ver, subver or '')
+                if not subver:
+                    break
+
+            return version
+
+        version = None
+        if pattern and re.search(r'@\(.+\)', pattern):
+            version = _build_up_version(name, pattern)
+        if not (version and _ensure_version_string(version)):
+            version = _ac_init(name)
         if not (version and _ensure_version_string(version)):
             version = _auto_init_automake(name)
         if not (version and _ensure_version_string(version)):
