@@ -137,6 +137,8 @@ def parse_version(workingdir, module, vfile, pattern):
                 subver = _define(filename, 'm4_define', ver)
                 if not subver:
                     subver = _define(filename, 'define', ver)
+                if not subver:
+                    subver = _read_item(filename, r'^%s\s*=\s*(.+)$' % ver)
 
                 version = version.replace('@(%s)' % ver, subver or '')
                 if not subver:
