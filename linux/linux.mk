@@ -64,6 +64,7 @@ LINUX_PATCH = $(filter ftp://% http://% https://%,$(LINUX_PATCHES))
 LINUX_INSTALL_IMAGES = YES
 LINUX_INSTALL_STAGING = YES
 LINUX_DEPENDENCIES += host-kmod
+LINUX_DEPENDENCIES += $(call qstrip,$(BR2_LINUX_DEPENDENCIES))
 
 # host tools needed for kernel compression
 ifeq ($(BR2_LINUX_KERNEL_LZ4),y)
