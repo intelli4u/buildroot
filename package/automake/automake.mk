@@ -33,3 +33,4 @@ $(eval $(host-autotools-package))
 AUTOMAKE = $(HOST_DIR)/bin/automake
 ACLOCAL_DIR = $(STAGING_DIR)/usr/share/aclocal
 ACLOCAL = $(HOST_DIR)/bin/aclocal $(if $(wildcard $(ACLOCAL_DIR)),-I $(ACLOCAL_DIR))
+$(shell mkdir -p $(ACLOCAL_DIR) $(ACLOCAL_HOST_DIR))
