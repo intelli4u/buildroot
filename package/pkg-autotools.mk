@@ -101,7 +101,9 @@ endef
 define AUTOGEN_HOOK
 	@$(call MESSAGE,"Autogenerating")
 	cd $($(PKG)_SRCDIR) && $(if $($(PKG)_AUTOGEN_ENV),$($(PKG)_AUTOGEN_ENV),NOCONFIGURE=yes)\
-		$(if $($(PKG)_AUTOGEN_SCRIPT),./$($(PKG)_AUTOGEN_SCRIPT), \
+		$(if $($(PKG)_AUTOGEN_SCRIPT), \
+		  $(if $(wildcard $(firstword $($(PKG)_AUTOGEN_SCRIPT))), \
+		    $($(PKG)_AUTOGEN_SCRIPT),./$($(PKG)_AUTOGEN_SCRIPT)), \
 		  $(if $(wildcard $($(PKG)_SRCDIR)/autogen.sh $($(PKG)_SRCDIR)/bootstrap), \
 		    $(wildcard $($(PKG)_SRCDIR)/autogen.sh $($(PKG)_SRCDIR)/bootstrap) \
 		     $($(PKG)_AUTOGEN_OPTS) $($(PKG)_AUTORECONF_OPTS), \
