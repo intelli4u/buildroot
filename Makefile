@@ -508,7 +508,7 @@ environ_configs := $(call qstrip,$(BR2_ENVIRON_CONFIGS))
 ifneq ($(environ_configs),)
 $(shell $(TOPDIR)/support/extra/build-environ.py \
 	-c '$(call qstrip,$(BR2_GLOBAL_EXPORT_VAR))' \
-	$(export_file) $(environ_configs))
+	$(export_file) $(environ_configs) 1>&2)
 
 include $(export_file)
 endif
