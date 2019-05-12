@@ -487,8 +487,8 @@ ifndef $(2)_STRIP_COMPONENTS
  endif
 endif
 
-$(2)_SRCDIR		       = $$($(2)_DIR)/$$($(2)_SUBDIR)
-$(2)_BUILDDIR		       ?= $$($(2)_SRCDIR)
+$(2)_BUILDDIR		       = $$($(2)_DIR)/$$($(2)_SUBDIR)
+$(2)_SRCDIR		       = $$(if $$($(2)_OVERRIDE2_SRCDIR),$$($(2)_OVERRIDE2_SRCDIR),$$($(2)_BUILDDIR))
 
 ifndef $(2)_SOURCE
  ifdef $(3)_SOURCE
