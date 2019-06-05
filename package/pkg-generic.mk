@@ -827,6 +827,12 @@ $(1)-clean-for-reconfigure: $(1)-clean-for-rebuild
 
 $(1)-reconfigure:	$(1)-clean-for-reconfigure $(1)
 
+$(1)-uninstall:
+			grep -P "^$(1)," $(BUILD_DIR)/packages-file-list.txt | \
+				sed -e "s|$(1),\.|$(TARGET_DIR)|" | while read file; do rm -rf $$$$file; done
+
+$(1)-clean:		$(1)-uninstall $(1)-dirclean
+
 # define the PKG variable for all targets, containing the
 # uppercase package variable prefix
 $$($(2)_TARGET_INSTALL_TARGET):		PKG=$(2)
@@ -999,6 +1005,7 @@ DL_TOOLS_DEPENDENCIES += $$(call extractor-dependency,$$($(2)_SOURCE))
 	$(1)-all-source \
 	$(1)-all-source-check \
 	$(1)-build \
+	$(1)-clean \
 	$(1)-clean-for-rebuild \
 	$(1)-clean-for-reconfigure \
 	$(1)-clean-for-reinstall \
@@ -1023,7 +1030,8 @@ DL_TOOLS_DEPENDENCIES += $$(call extractor-dependency,$$($(2)_SOURCE))
 	$(1)-show-depends \
 	$(1)-show-version \
 	$(1)-source \
-	$(1)-source-check
+	$(1)-source-check \
+	$(1)-uninstall
 
 ifneq ($$($(2)_SOURCE),)
 ifeq ($$($(2)_SITE),)
