@@ -515,10 +515,6 @@ endif
 
 include $(sort $(wildcard package/*/*.mk))
 
-include boot/common.mk
-include linux/linux.mk
-include fs/common.mk
-
 # If using a br2-external tree, the BR2_EXTERNAL_$(NAME)_PATH variables
 # are also present in the .config file. Since .config is included after
 # we defined them in the Makefile, the values for those variables are
@@ -528,6 +524,10 @@ include $(BR2_EXTERNAL_FILE)
 
 # Nothing to include if no BR2_EXTERNAL tree in use
 include $(BR2_EXTERNAL_MKS)
+
+include boot/common.mk
+include linux/linux.mk
+include fs/common.mk
 
 # Now we are sure we have all the packages scanned and defined. We now
 # check for each package in the list of enabled packages, that all its
